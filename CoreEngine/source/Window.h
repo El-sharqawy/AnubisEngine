@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <unordered_map>
+#include <array>
+#include <maths.h>
 
 enum EWindowMode : GLubyte
 {
@@ -23,13 +25,22 @@ public:
 
 	void SetWindowType(GLubyte ubWindowType);
 	GLubyte GetWindowType() const;
-
 	GLFWwindow* GetGLWindow();
 
 	void Update();
-	void ProcessInput();
 
+	// User Input
+	void ProcessInput();
 	void SetCursor(GLint iCursorNum);
+	void SetKeyboardKey(GLint iKey, GLboolean bValue);
+	void SetMouseKey(GLint iKey, GLboolean bValue);
+	void SetMousePosition(GLfloat fX, GLfloat fY);
+	void SetMouseScroll(GLfloat fMouseScrollVal);
+
+	bool IsKeyDown(GLint iKey);
+	bool IsKeyUp(GLint iKey);
+
+	// Set Window Mode
 	void SetWindowMode(const EWindowMode& windowMode);
 
 protected:
@@ -66,4 +77,11 @@ private:
 	// Cursors
 	GLint m_iCurrentCursor;
 	std::unordered_map<GLint, GLFWcursor*> m_mCursorsPtr;
+	Vector2D m_v2MousePos;
+	GLfloat m_fMouseScroll;
+	GLboolean m_bMouseScrollUpdate;
+
+	// Input
+	std::array<GLboolean, 1024> m_bKeyBools;
+	std::array<GLboolean, 3> m_bMouseKeys; // 0 -> Left, 1 -> Right, 2 -> Scroll
 };

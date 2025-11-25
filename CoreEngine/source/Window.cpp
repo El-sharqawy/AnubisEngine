@@ -40,9 +40,11 @@ void CWindow::Clear()
 
 	m_ubWindowType = 0;
 
+	// Timing
 	m_fLastFrame = 0.0f;
 	m_fDeltaTime = 0.0f;
 
+	// Cursor Part
 	m_iCurrentCursor = GLFW_ARROW_CURSOR;
 
 	glfwDestroyCursor(m_mCursorsPtr[GLFW_ARROW_CURSOR]);
@@ -52,6 +54,14 @@ void CWindow::Clear()
 	glfwDestroyCursor(m_mCursorsPtr[GLFW_HRESIZE_CURSOR]);
 	glfwDestroyCursor(m_mCursorsPtr[GLFW_VRESIZE_CURSOR]);
 	m_mCursorsPtr.clear();
+
+	m_v2MousePos = 0.0f;
+	m_fMouseScroll = 0.0f;
+	m_bMouseScrollUpdate = true;
+
+	// Input
+	m_bKeyBools.fill(false);
+	m_bMouseKeys.fill(false);
 }
 
 void CWindow::Destroy()
@@ -127,10 +137,10 @@ bool CWindow::InitializeWindow()
 	}
 
 	// Make window context
-	glfwMakeContextCurrent(m_pGLWindow);
+	glfwMakeContextCurrent(GetGLWindow());
 
 	// Set Current Window Pointer
-	glfwSetWindowUserPointer(m_pGLWindow, this);
+	glfwSetWindowUserPointer(GetGLWindow(), this);
 
 	// Initialize GLAD library
 	if (gladLoadGLLoader(GLADloadproc(glfwGetProcAddress)) == false)
@@ -164,7 +174,7 @@ bool CWindow::InitializeWindow()
 	glDebugMessageCallback(MyDebugCallback, nullptr);
 
 	// Show our window
-	glfwShowWindow(m_pGLWindow);
+	glfwShowWindow(GetGLWindow());
  	return (true);
 }
 
@@ -202,44 +212,24 @@ void CWindow::Update()
 
 void CWindow::ProcessInput()
 {
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_ESCAPE))
+	if (IsKeyDown(GLFW_KEY_ESCAPE))
 	{
 		glfwSetWindowShouldClose(GetGLWindow(), true);
 	}
 
-	// Set Cursors
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_0))
+	if (IsKeyDown(GLFW_KEY_F1))
 	{
-		SetCursor(GLFW_ARROW_CURSOR);
+		if (GetWindowType() != EWindowMode::WINDOWED_MODE)
+		{
+			SetWindowMode(EWindowMode::WINDOWED_MODE);
+		}
 	}
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_1))
+	if (IsKeyDown(GLFW_KEY_F1))
 	{
-		SetCursor(GLFW_IBEAM_CURSOR);
-	}
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_2))
-	{
-		SetCursor(GLFW_CROSSHAIR_CURSOR);
-	}
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_3))
-	{
-		SetCursor(GLFW_HAND_CURSOR);
-	}
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_4))
-	{
-		SetCursor(GLFW_HRESIZE_CURSOR);
-	}
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_5))
-	{
-		SetCursor(GLFW_VRESIZE_CURSOR);
-	}
-
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_F1))
-	{
-		SetWindowMode(EWindowMode::WINDOWED_MODE);
-	}
-	if (glfwGetKey(GetGLWindow(), GLFW_KEY_F2))
-	{
-		SetWindowMode(EWindowMode::FULLSCREEN_MODE);
+		if (GetWindowType() != EWindowMode::FULLSCREEN_MODE)
+		{
+			SetWindowMode(EWindowMode::FULLSCREEN_MODE);
+		}
 	}
 
 }
@@ -248,6 +238,49 @@ void CWindow::SetCursor(GLint iCursorNum)
 {
 	m_iCurrentCursor = iCursorNum;
 	glfwSetCursor(GetGLWindow(), m_mCursorsPtr[iCursorNum]);
+}
+
+void CWindow::SetKeyboardKey(GLint iKey, GLboolean bValue)
+{
+	if (iKey < 0 || iKey > GLFW_KEY_LAST)
+	{
+		syserr("Invalid Input, key %d out of range", iKey);
+		return;
+	}
+
+	m_bKeyBools[iKey] = bValue;
+}
+
+void CWindow::SetMouseKey(GLint iKey, GLboolean bValue)
+{
+	if (iKey < 0 || iKey > GLFW_MOUSE_BUTTON_LAST)
+	{
+		syserr("Invalid Input, key %d out of range", iKey);
+		return;
+	}
+
+	m_bMouseKeys[iKey] = bValue;
+}
+
+void CWindow::SetMousePosition(GLfloat fX, GLfloat fY)
+{
+	m_v2MousePos = Vector2D(fX, fY);
+}
+
+void CWindow::SetMouseScroll(GLfloat fMouseScrollVal)
+{
+	m_fMouseScroll = fMouseScrollVal;
+	m_bMouseScrollUpdate = true;
+}
+
+bool CWindow::IsKeyDown(GLint iKey)
+{
+	return m_bKeyBools[iKey] == true;
+}
+
+bool CWindow::IsKeyUp(GLint iKey)
+{
+	return m_bKeyBools[iKey] == false;
 }
 
 void CWindow::SetWindowMode(const EWindowMode& windowMode)
@@ -293,6 +326,7 @@ void CWindow::mouse_callback(GLFWwindow* window, GLdouble xpos, GLdouble ypos)
 		return;
 	}
 
+	appWindow->SetMousePosition(static_cast<GLfloat>(xpos), static_cast<GLfloat>(ypos));
 }
 
 void CWindow::scroll_callback(GLFWwindow* window, GLdouble xoffset, GLdouble yoffset)
@@ -304,6 +338,7 @@ void CWindow::scroll_callback(GLFWwindow* window, GLdouble xoffset, GLdouble yof
 		return;
 	}
 
+	appWindow->SetMouseScroll(yoffset);
 }
 
 void CWindow::keys_callback(GLFWwindow* window, GLint key, GLint scancode, GLint action, GLint mods)
@@ -315,6 +350,7 @@ void CWindow::keys_callback(GLFWwindow* window, GLint key, GLint scancode, GLint
 		return;
 	}
 
+	appWindow->SetKeyboardKey(key, action);
 }
 
 void CWindow::mouse_button_callback(GLFWwindow* window, GLint button, GLint action, GLint mods)
@@ -326,6 +362,7 @@ void CWindow::mouse_button_callback(GLFWwindow* window, GLint button, GLint acti
 		return;
 	}
 
+	appWindow->SetMouseKey(button, action);
 }
 
 void CWindow::ResizeWindow(GLint iWidth, GLint iHeight)
