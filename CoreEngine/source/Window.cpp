@@ -193,6 +193,26 @@ GLFWwindow* CWindow::GetGLWindow()
 	return (m_pGLWindow);
 }
 
+GLint CWindow::GetWidth() const
+{
+	return (m_iWidth);
+}
+
+GLint CWindow::GetHeight() const
+{
+	return (m_iHeight);
+}
+
+GLfloat CWindow::GetWidthF() const
+{
+	return static_cast<GLfloat>(m_iWidth);
+}
+
+GLfloat CWindow::GetHeightF() const
+{
+	return static_cast<GLfloat>(m_iHeight);
+}
+
 void CWindow::Update()
 {
 	while (glfwWindowShouldClose(GetGLWindow()) == false)

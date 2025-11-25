@@ -1,10 +1,9 @@
 #pragma once
 
-#include <glad/glad.h>
+#include <maths.h>
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 #include <array>
-#include <maths.h>
 
 enum EWindowMode : GLubyte
 {
@@ -22,10 +21,15 @@ public:
 	void Destroy();
 
 	bool InitializeWindow();
-
+	
+	// Accessors
 	void SetWindowType(GLubyte ubWindowType);
 	GLubyte GetWindowType() const;
 	GLFWwindow* GetGLWindow();
+	GLint GetWidth() const;
+	GLint GetHeight() const;
+	GLfloat GetWidthF() const;
+	GLfloat GetHeightF() const;
 
 	void Update();
 
