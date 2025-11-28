@@ -295,7 +295,7 @@ void CWindow::SetMouseScroll(GLfloat fMouseScrollVal)
 
 bool CWindow::IsKeyDown(GLint iKey)
 {
-	return m_bKeyBools[iKey] == true;
+	return m_bKeyBools[iKey];
 }
 
 bool CWindow::IsKeyUp(GLint iKey)
@@ -358,7 +358,7 @@ void CWindow::scroll_callback(GLFWwindow* window, GLdouble xoffset, GLdouble yof
 		return;
 	}
 
-	appWindow->SetMouseScroll(yoffset);
+	appWindow->SetMouseScroll(static_cast<GLfloat>(yoffset));
 }
 
 void CWindow::keys_callback(GLFWwindow* window, GLint key, GLint scancode, GLint action, GLint mods)

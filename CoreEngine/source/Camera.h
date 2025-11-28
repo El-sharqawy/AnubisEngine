@@ -10,13 +10,16 @@ public:
 	CCamera(CWindow* pWindow);
 	~CCamera() = default;
 
-	Matrix4 GetMatrix() const;
-	Matrix4 GetProjectionMatrix() const;
+	SMatrix4 GetViewMatrix() const;
+	SMatrix4 GetProjectionMatrix() const;
+	SMatrix4 GetViewProjectionMatrix() const;
 
 private:
-	Vector3D m_v3CameraPosition;
-	Vector3D m_v3Up;		// V
-	Vector3D m_v3Target;	// N
+	Vector3D m_v3Position;
+	Vector3D m_v3Front;
+	Vector3D m_v3WorldUp;
+	Vector3D m_v3Right;
+	Vector3D m_v3Up;
 
 	CWindow* m_pWindow;
 };

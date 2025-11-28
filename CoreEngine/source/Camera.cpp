@@ -3,93 +3,78 @@
 
 CCamera::CCamera(CWindow* pWindow)
 {
-	m_v3CameraPosition = Vector3D(0.0f, 0.0f, 0.0f);
-	m_v3Up = Vector3D(0.0f, 1.0f, 0.0f);
-	m_v3Target = Vector3D(0.0f, 0.0f, 1.0f);
+	m_v3Position = Vector3D(0.0f, 0.0f, 0.0f);
+	m_v3Front = Vector3D(0.0f, 0.0f, -1.0f);
+	m_v3WorldUp = Vector3D(0.0f, 1.0f, 0.0f);
+
+	m_v3Right = m_v3Front.cross(m_v3WorldUp);
+	m_v3Right.normalize();
+
+	m_v3Up = m_v3Right.cross(m_v3Front);
+	m_v3Up.normalize();
 
 	m_pWindow = pWindow;
 }
 
-Matrix4 CCamera::GetMatrix() const
+/**
+ * Constructs the view matrix for this camera.
+ * Transforms world coordinates into camera (view) space using a right-handed
+ * coordinate system where the camera looks down the negative Z-axis.
+ *
+ * @return 4x4 view matrix in column-major order
+ */
+SMatrix4 CCamera::GetViewMatrix() const
 {
-	Vector3D U = m_v3Up.cross(m_v3Target);
-	U.normalize();
-
-	Vector3D V = m_v3Target.cross(U);
-	V.normalize();
-
-	Vector3D N = m_v3Target;
-	N.normalize();
-	Matrix4 CameraRotationMatrix{};
-	CameraRotationMatrix.mat[0][0] = U.x;
-	CameraRotationMatrix.mat[0][1] = U.y;
-	CameraRotationMatrix.mat[0][2] = U.z;
-	CameraRotationMatrix.mat[0][3] = 0.0f;
-
-	CameraRotationMatrix.mat[1][0] = V.x;
-	CameraRotationMatrix.mat[1][1] = V.y;
-	CameraRotationMatrix.mat[1][2] = V.z;
-	CameraRotationMatrix.mat[1][3] = 0.0f;
-
-	CameraRotationMatrix.mat[2][0] = N.x;
-	CameraRotationMatrix.mat[2][1] = N.y;
-	CameraRotationMatrix.mat[2][2] = N.z;
-	CameraRotationMatrix.mat[2][3] = 0.0f;
-
-	CameraRotationMatrix.mat[3][0] = 0.0f;
-	CameraRotationMatrix.mat[3][1] = 0.0f;
-	CameraRotationMatrix.mat[3][2] = 0.0f;
-	CameraRotationMatrix.mat[3][3] = 1.0f;
-
-	Matrix4 CameraTranslationMatrix{};
-	CameraTranslationMatrix.InitIdentity();
-	CameraTranslationMatrix.mat[0][3] = -m_v3CameraPosition.x;
-	CameraTranslationMatrix.mat[1][3] = -m_v3CameraPosition.y;
-	CameraTranslationMatrix.mat[2][3] = -m_v3CameraPosition.z;
-
-	Matrix4 finalMat = CameraRotationMatrix * CameraTranslationMatrix;
-	return (finalMat);
+	// Build view matrix using LookAt transformation:
+	// - Eye position: current camera position (m_v3Position)
+	// - Target: point along camera's forward direction (m_v3Position + m_v3Front)
+	// - Up vector: camera's local up direction (m_v3Up)
+	//
+	// This creates a coordinate frame with:
+	//   Right = normalize(Front x Up)
+	//   Up    = normalize(Right x Front)
+	//   Front = camera's forward direction
+	SMatrix4 viewMatrix{};
+	return viewMatrix.LookAtRH(m_v3Position, m_v3Position + m_v3Front, m_v3Up);
 }
 
-Matrix4 CCamera::GetProjectionMatrix() const
+/**
+ * Constructs the perspective projection matrix for this camera.
+ * Maps view space coordinates to normalized device coordinates (NDC) using
+ * a right-handed perspective projection with symmetric frustum.
+ *
+ * Uses fixed parameters:
+ *   - 45-degree field of view
+ *   - Window aspect ratio (width/height)
+ *   - Near plane at 0.1 units
+ *   - Far plane at 1000.0 units
+ *
+ * @return 4x4 projection matrix in column-major order (OpenGL compatible)
+ */
+SMatrix4 CCamera::GetProjectionMatrix() const
 {
-	// Prespective Projection
-	GLfloat Fov = 45.0f; // 45 Degrees
-	GLfloat HalfTanFOV = std::tan(ToRadian(Fov / 2.0f));
-	GLfloat AspectRatio = m_pWindow->GetWidthF() / m_pWindow->GetHeightF();
-	GLfloat NearZ = 0.1f;
-	GLfloat FarZ = 1000.0f;
-	GLfloat ZRange = FarZ - NearZ;
+	// Configure perspective projection parameters
+	SPersProjInfo persProj{};
+	persProj.FOV = 45.0f;                        // Field of view in degrees
+	persProj.Width = m_pWindow->GetWidthF();     // Viewport width
+	persProj.Height = m_pWindow->GetHeightF();   // Viewport height
+	persProj.zNear = 0.1f;                       // Near clipping plane
+	persProj.zFar = 10000.0f;                     // Far clipping plane
 
-	Matrix4 CameraProjectionMatrix{};
-
-	// Row 0 (X mapping)
-	CameraProjectionMatrix.mat[0][0] = 1.0f / (HalfTanFOV * AspectRatio);
-	CameraProjectionMatrix.mat[0][1] = 0.0f;
-	CameraProjectionMatrix.mat[0][2] = 0.0f;
-	CameraProjectionMatrix.mat[0][3] = 0.0f;
-
-	// Row 1 (Y mapping)
-	CameraProjectionMatrix.mat[1][0] = 0.0f;
-	CameraProjectionMatrix.mat[1][1] = 1.0f / HalfTanFOV;
-	CameraProjectionMatrix.mat[1][2] = 0.0f;
-	CameraProjectionMatrix.mat[1][3] = 0.0f;
-
-	// Row 2 (Z mapping: Z -> Z_ndc, maps [-n, -f] to [-1, 1])
-	CameraProjectionMatrix.mat[2][0] = 0.0f;
-	CameraProjectionMatrix.mat[2][1] = 0.0f;
-	// (Far + Near) / (Far - Near)
-	CameraProjectionMatrix.mat[2][2] = (FarZ + NearZ) / ZRange;;
-	// -2 * Far * Near / (Far - Near)
-	CameraProjectionMatrix.mat[2][3] = (-2.0f * FarZ * NearZ) / ZRange;
-
-	// Row 3 (W component for perspective division)
-	CameraProjectionMatrix.mat[3][0] = 0.0f;
-	CameraProjectionMatrix.mat[3][1] = 0.0f;
-	// -1.0f because we are projecting z-values that are negative in view space.
-	CameraProjectionMatrix.mat[3][2] = -1.0f;
-	CameraProjectionMatrix.mat[3][3] = 0.0f;
-
-	return (CameraProjectionMatrix);
+	// Build perspective projection matrix:
+	//
+	//     [ 1/(t*a)     0           0              0     ]
+	// P = [    0      1/t           0              0     ]
+	//     [    0       0     -(f+n)/(f-n)   -2fn/(f-n)   ]
+	//     [    0       0          -1              0      ]
+	//
+	// where t = tan(fov/2), a = width/height, n = zNear, f = zFar
+	SMatrix4 projectionMatrix{};
+	return projectionMatrix.PerspectiveRH(persProj);
 }
 
+
+SMatrix4 CCamera::GetViewProjectionMatrix() const
+{
+	return (GetProjectionMatrix() * GetViewMatrix());
+}
