@@ -10,9 +10,9 @@ public:
 	CCamera(CWindow* pWindow);
 	~CCamera() = default;
 
-	SMatrix4 GetViewMatrix() const;
-	SMatrix4 GetProjectionMatrix() const;
-	SMatrix4 GetViewProjectionMatrix() const;
+	Matrix4 GetViewMatrix() const;
+	Matrix4 GetProjectionMatrix() const;
+	Matrix4 GetViewProjectionMatrix() const;
 
 private:
 	Vector3D m_v3Position;
