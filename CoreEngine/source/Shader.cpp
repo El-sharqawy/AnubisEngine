@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <utils.h>
+#include <glm/gtc/type_ptr.hpp>
 
 /**
  * Creates a new shader with given name.
@@ -387,4 +388,286 @@ void CShader::SetInt(const std::string& name, GLint value) const
 {
 	GLuint iIntLoc = glGetUniformLocation(GetProgramID(), name.c_str());
 	glUniform1i(iIntLoc, value);
+}
+
+/**
+ * Sets an integer array uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided integer.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param index: The integer index to be set.
+ * @param value: The integer value to be set.
+ *
+ */
+void CShader::SetIntArray(const std::string& name, GLint index, GLint value) const
+{
+	std::string fullName = name + "[" + std::to_string(index) + "]";
+	GLuint iIntLoc = glGetUniformLocation(GetProgramID(), fullName.c_str());
+	glUniform1i(iIntLoc, value);
+}
+
+/**
+ * Sets an float uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided float.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param value: The float value to be set.
+ *
+ */
+void CShader::SetFloat(const std::string& name, GLfloat value) const
+{
+	GLuint iFloatLoc = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform1f(iFloatLoc, value);
+}
+
+/**
+ *  Sets a 2D vector uniform in the shader program using two floats.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided x and y components.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param value1: The first float value (x-component).
+ * @param value2: The second float value (y-component).
+ *
+ */
+void CShader::Set2Float(const std::string& name, GLfloat value1, GLfloat value2) const
+{
+	GLuint iFloatLoc = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform2f(iFloatLoc, value1, value2);
+}
+
+/**
+ * Sets a 2D vector uniform in the shader program using individual components.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value using the provided x and y components.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param x: The x-component of the vector.
+ * @param y: The y-component of the vector.
+ */
+void CShader::SetVec2(const std::string& name, GLfloat x, GLfloat y) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform2f(iVectorLocation, x, y);
+}
+
+/**
+ * Sets a 3D vector uniform in the shader program using individual components.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value using the provided x, y, and z components.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param x: The x-component of the vector.
+ * @param y: The y-component of the vector.
+ * @param z: The z-component of the vector.
+ */
+void CShader::SetVec3(const std::string& name, GLfloat x, GLfloat y, GLfloat z) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform3f(iVectorLocation, x, y, z);
+}
+
+/**
+ * Sets a 4D vector uniform in the shader program using individual components.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value using the provided x, y, z, and w components.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param x: The x-component of the vector.
+ * @param y: The y-component of the vector.
+ * @param z: The z-component of the vector.
+ * @param w: The w-component of the vector.
+ */
+void CShader::SetVec4(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform4f(iVectorLocation, x, y, z, w);
+}
+
+/**
+ * Sets a 2D vector uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 2D vector.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param vec2: The 2D GLM vector to be set.
+ */
+void CShader::SetVec2(const std::string& name, const glm::vec2& vec2) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform2fv(iVectorLocation, 1, glm::value_ptr(vec2));
+}
+
+/**
+ * Sets a 3D vector uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 3D vector.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param vec3: The 3D GLM vector to be set.
+ */
+void CShader::SetVec3(const std::string& name, const glm::vec3& vec3) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform3fv(iVectorLocation, 1, glm::value_ptr(vec3));
+}
+
+/**
+ * Sets a 4D vector uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 4D vector.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param vec4: The 4D GLM vector to be set.
+ */
+void CShader::SetVec4(const std::string& name, const glm::vec4& vec4) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform3fv(iVectorLocation, 1, glm::value_ptr(vec4));
+}
+
+/**
+ * Sets a 2x2 matrix uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 2x2 matrix.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param matrix: The 2x2 GLM matrix to be set.
+ */
+void CShader::SetMat2(const std::string& name, const glm::mat2& matrix) const
+{
+	GLuint iMatLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniformMatrix2fv(iMatLocation, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+/**
+ * Sets a 3x3 matrix uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 3x3 matrix.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param matrix: The 3x3 GLM matrix to be set.
+ */
+void CShader::SetMat3(const std::string& name, const glm::mat3& matrix) const
+{
+	GLuint iMatLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniformMatrix3fv(iMatLocation, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+/**
+ * Sets a 4x4 matrix uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 4x4 matrix.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param matrix: The 4x4 GLM matrix to be set.
+ */
+void CShader::SetMat4(const std::string& name, const glm::mat4& matrix) const
+{
+	GLuint iMatLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniformMatrix4fv(iMatLocation, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+/**
+ * Sets a 2D vector uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 2D vector.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param vec2: The 2D vector to be set.
+ */
+void CShader::SetVec2(const std::string& name, const Vector2D& vec2) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform2fv(iVectorLocation, 1, vec2);
+}
+
+/**
+ * Sets a 3D vector uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 3D vector.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param vec3: The 3D vector to be set.
+ */
+void CShader::SetVec3(const std::string& name, const Vector3D& vec3) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform3fv(iVectorLocation, 1, vec3);
+}
+
+/**
+ * Sets a 4D vector uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 4D vector.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param vec4: The 4D vector to be set.
+ */
+void CShader::SetVec4(const std::string& name, const Vector4D& vec4) const
+{
+	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniform4fv(iVectorLocation, 1, vec4);
+}
+
+/**
+ * Sets a 2x2 matrix uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 2x2 matrix.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param matrix: The 2x2 matrix to be set.
+ */
+void CShader::SetMat2(const std::string& name, const Matrix2& matrix) const
+{
+	GLuint iMatLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniformMatrix2fv(iMatLocation, 1, GL_FALSE,(const GLfloat*)matrix);
+}
+
+/**
+ * Sets a 3x3 matrix uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 3x3 matrix.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param matrix: The 3x3 matrix to be set.
+ */
+void CShader::SetMat3(const std::string& name, const Matrix3& matrix) const
+{
+	GLuint iMatLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniformMatrix3fv(iMatLocation, 1, GL_FALSE, (const GLfloat*)matrix);
+}
+
+/**
+ * Sets a 4x4 matrix uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided 4x4 matrix.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param matrix: The 4x4 matrix to be set.
+ */
+void CShader::SetMat4(const std::string& name, const Matrix4& matrix) const
+{
+	GLuint iMatLocation = glGetUniformLocation(GetProgramID(), name.c_str());
+	glUniformMatrix4fv(iMatLocation, 1, GL_FALSE, (const GLfloat*)matrix);
 }

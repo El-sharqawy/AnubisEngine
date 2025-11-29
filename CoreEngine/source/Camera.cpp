@@ -6,7 +6,7 @@ CCamera::CCamera(CWindow* pWindow)
 	m_v3Position = Vector3D(0.0f, 0.0f, 0.0f);
 	m_v3Front = Vector3D(0.0f, 0.0f, -1.0f);
 	m_v3WorldUp = Vector3D(0.0f, 1.0f, 0.0f);
-
+	
 	m_v3Right = m_v3Front.cross(m_v3WorldUp);
 	m_v3Right.normalize();
 
@@ -23,7 +23,7 @@ CCamera::CCamera(CWindow* pWindow)
  *
  * @return 4x4 view matrix in column-major order
  */
-SMatrix4 CCamera::GetViewMatrix() const
+Matrix4 CCamera::GetViewMatrix() const
 {
 	// Build view matrix using LookAt transformation:
 	// - Eye position: current camera position (m_v3Position)
@@ -34,7 +34,7 @@ SMatrix4 CCamera::GetViewMatrix() const
 	//   Right = normalize(Front x Up)
 	//   Up    = normalize(Right x Front)
 	//   Front = camera's forward direction
-	SMatrix4 viewMatrix{};
+	Matrix4 viewMatrix{};
 	return viewMatrix.LookAtRH(m_v3Position, m_v3Position + m_v3Front, m_v3Up);
 }
 
@@ -51,7 +51,7 @@ SMatrix4 CCamera::GetViewMatrix() const
  *
  * @return 4x4 projection matrix in column-major order (OpenGL compatible)
  */
-SMatrix4 CCamera::GetProjectionMatrix() const
+Matrix4 CCamera::GetProjectionMatrix() const
 {
 	// Configure perspective projection parameters
 	SPersProjInfo persProj{};
@@ -69,12 +69,12 @@ SMatrix4 CCamera::GetProjectionMatrix() const
 	//     [    0       0          -1              0      ]
 	//
 	// where t = tan(fov/2), a = width/height, n = zNear, f = zFar
-	SMatrix4 projectionMatrix{};
+	Matrix4 projectionMatrix{};
 	return projectionMatrix.PerspectiveRH(persProj);
 }
 
 
-SMatrix4 CCamera::GetViewProjectionMatrix() const
+Matrix4 CCamera::GetViewProjectionMatrix() const
 {
 	return (GetProjectionMatrix() * GetViewMatrix());
 }

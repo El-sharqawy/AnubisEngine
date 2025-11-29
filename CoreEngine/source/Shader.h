@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
+#include <maths.h>
 
 typedef struct SShaderType
 {
@@ -141,12 +143,29 @@ public:
 	/* general utility uniform functions */
 	void SetBool(const std::string& name, bool value) const;
 	void SetInt(const std::string& name, GLint value) const;
-	void SetIntArray(const std::string& name, int index, int value) const;
-	void SetFloat(const std::string& name, float value) const;
-	void Set2Float(const std::string& name, float value1, float value2) const;
-	void SetVec2(const std::string& name, float x, float y) const;
-	void SetVec3(const std::string& name, float x, float y, float z) const;
-	void SetVec4(const std::string& name, float x, float y, float z, float w) const;
+	void SetIntArray(const std::string& name, GLint index, GLint value) const;
+	void SetFloat(const std::string& name, GLfloat value) const;
+	void Set2Float(const std::string& name, GLfloat value1, GLfloat value2) const;
+	void SetVec2(const std::string& name, GLfloat x, GLfloat y) const;
+	void SetVec3(const std::string& name, GLfloat x, GLfloat y, GLfloat z) const;
+	void SetVec4(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const;
+
+	/* glm utility uniform functions */
+	void SetVec2(const std::string& name, const glm::vec2& vec2) const;
+	void SetVec3(const std::string& name, const glm::vec3& vec3) const;
+	void SetVec4(const std::string& name, const glm::vec4& vec4) const;
+	void SetMat2(const std::string& name, const glm::mat2& matrix) const;
+	void SetMat3(const std::string& name, const glm::mat3& matrix) const;
+	void SetMat4(const std::string& name, const glm::mat4& matrix) const;
+
+	/* my math utility uniform functions */
+	void SetVec2(const std::string& name, const Vector2D& vec2) const;
+	void SetVec3(const std::string& name, const Vector3D& vec3) const;
+	void SetVec4(const std::string& name, const Vector4D& vec4) const;
+
+	void SetMat2(const std::string& name, const Matrix2& matrix) const;
+	void SetMat3(const std::string& name, const Matrix3& matrix) const;
+	void SetMat4(const std::string& name, const Matrix4& matrix) const;
 
 private:
 	std::string m_stName;               // Program name for debugging
