@@ -149,6 +149,9 @@ public:
 	void SetVec2(const std::string& name, GLfloat x, GLfloat y) const;
 	void SetVec3(const std::string& name, GLfloat x, GLfloat y, GLfloat z) const;
 	void SetVec4(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const;
+	void SetSampler2D(const std::string& name, GLuint iTextureID, GLint iTexValue) const;
+	void SetSampler3D(const std::string& name, GLuint iTextureID, GLint iTexValue) const;
+	void SetBindlessSampler2D(const std::string& name, GLuint64 value) const;
 
 	/* glm utility uniform functions */
 	void SetVec2(const std::string& name, const glm::vec2& vec2) const;
@@ -162,7 +165,6 @@ public:
 	void SetVec2(const std::string& name, const Vector2D& vec2) const;
 	void SetVec3(const std::string& name, const Vector3D& vec3) const;
 	void SetVec4(const std::string& name, const Vector4D& vec4) const;
-
 	void SetMat2(const std::string& name, const Matrix2& matrix) const;
 	void SetMat3(const std::string& name, const Matrix3& matrix) const;
 	void SetMat4(const std::string& name, const Matrix4& matrix) const;

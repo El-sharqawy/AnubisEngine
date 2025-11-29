@@ -62,6 +62,12 @@ void CWindow::Clear()
 	// Input
 	m_bKeyBools.fill(false);
 	m_bMouseKeys.fill(false);
+
+	if (m_pShader)
+	{
+		delete m_pShader;
+		m_pShader = nullptr;
+	}
 }
 
 void CWindow::Destroy()
@@ -175,6 +181,13 @@ bool CWindow::InitializeWindow()
 
 	// Show our window
 	glfwShowWindow(GetGLWindow());
+
+	m_pShader = new CShader("MainShader");
+	m_pShader->InitializeShader();
+	m_pShader->AttachShader("resources\\shader.vert");
+	m_pShader->AttachShader("resources\\shader.frag");
+	m_pShader->LinkProgram();
+
  	return (true);
 }
 

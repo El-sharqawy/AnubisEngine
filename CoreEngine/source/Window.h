@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 #include <array>
+#include "Shader.h"
 
 enum EWindowMode : GLubyte
 {
@@ -88,4 +89,7 @@ private:
 	// Input
 	std::array<GLboolean, 1024> m_bKeyBools;
 	std::array<GLboolean, 3> m_bMouseKeys; // 0 -> Left, 1 -> Right, 2 -> Scroll
+
+	// test shader
+	CShader* m_pShader;
 };

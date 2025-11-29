@@ -103,6 +103,8 @@ bool CShader::AttachShader(const std::string& stShaderPath)
 	// Attach to program
 	glAttachShader(m_uiProgramID, uiShaderID);
 	m_vecShaders.push_back(uiShaderID);
+
+	syslog("Successfully Attached shader: %s", GetShaderName(stShaderPath).c_str());
 	return (true);
 }
 
@@ -490,6 +492,59 @@ void CShader::SetVec4(const std::string& name, GLfloat x, GLfloat y, GLfloat z, 
 {
 	GLuint iVectorLocation = glGetUniformLocation(GetProgramID(), name.c_str());
 	glUniform4f(iVectorLocation, x, y, z, w);
+}
+
+void CShader::SetSampler2D(const std::string& name, GLuint iTextureID, GLint iTexValue) const
+{
+	if (IsGLVersionHigher(4, 5))
+	{
+		// Use glBindTextureUnit for OpenGL 4.5 and higher
+		glBindTextureUnit(iTexValue, iTextureID);
+	}
+	else
+	{
+		glActiveTexture(GL_TEXTURE0 + iTexValue);
+		glBindTexture(GL_TEXTURE_2D, iTextureID);
+	}
+	SetInt(name, iTexValue);
+}
+
+void CShader::SetSampler3D(const std::string& name, GLuint iTexValue, GLint iTextureID) const
+{
+	if (IsGLVersionHigher(4, 5))
+	{
+		// Use glBindTextureUnit for OpenGL 4.5 and higher
+		glBindTextureUnit(iTexValue, iTextureID);
+	}
+	else
+	{
+		glActiveTexture(GL_TEXTURE0 + iTexValue);
+		glBindTexture(GL_TEXTURE_3D, iTextureID);
+	}
+	SetInt(name, iTexValue);
+}
+
+/**
+ * Sets an sampler2D Bindless texture uniform in the shader program.
+ *
+ * This function locates the uniform variable in the shader by its name
+ * and sets its value to the provided integer.
+ *
+ * @param name: The name of the uniform variable in the shader.
+ * @param value: The unsigned integer64 value of texture Handler.
+ *
+ */
+void CShader::SetBindlessSampler2D(const std::string& name, GLuint64 value) const
+{
+	GLint iIntLoc = glGetUniformLocation(GetProgramID(), name.c_str());
+
+	if (iIntLoc == -1)
+	{
+		syserr("[Shader] Warning: Uniform '%s' not found or optimized out.", name.c_str());
+		return;
+	}
+
+	glUniformHandleui64ARB(iIntLoc, value);
 }
 
 /**
