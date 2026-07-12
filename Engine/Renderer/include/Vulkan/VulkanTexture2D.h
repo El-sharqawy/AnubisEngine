@@ -30,6 +30,7 @@ public:
     uint32_t GetWidth() const override;
     uint32_t GetHeight() const override;
     std::string GetName() const;
+	bool IsValid() const override;
 
 	// Vulkan Specified
 private:

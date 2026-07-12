@@ -152,7 +152,6 @@ void CVulkanRenderer::EndFrame()
 
 	m_bFrameStarted = false;
 	m_uiCurrentFrame = (m_uiCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-
 }
 
 void CVulkanRenderer::SubmitRenderItem(const SRenderItem& renderItem)

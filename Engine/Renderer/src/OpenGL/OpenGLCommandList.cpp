@@ -5,6 +5,7 @@
 #include "OpenGL/OpenGLMaterial.h"
 #include "OpenGL/OpenGLBindingContext.h"
 #include "OpenGL/OpenGLUtils.h"
+#include "OpenGL/OpenGLVertexArray.h"
 #include "Logging/LogManager.h"
 
 void COpenGLCommandList::Begin()
@@ -55,6 +56,16 @@ void COpenGLCommandList::BindIndexBuffer(IBuffer* buffer, EIndexType type, uint6
 	glBindBuffer(OpenGLUtils::ToGLBufferType(glBuffer->GetType()), glBuffer->GetBufferID());
 }
 
+void COpenGLCommandList::BindVertexArray(CVertexArray* pVAO)
+{
+	if (!pVAO)
+	{
+		return;
+	}
+
+	glBindVertexArray(pVAO->GetID());
+}
+
 void COpenGLCommandList::BindMaterial(IMaterial* material, uint32_t frameIndex)
 {
 	if (!material)
@@ -96,6 +107,7 @@ void COpenGLCommandList::PushConstants(const void* data, uint32_t size, uint32_t
 	// (Alternatively, your CommandList could manage a transient dynamic buffer)
 	COpenGLBuffer* glBufferUBO = dynamic_cast<COpenGLBuffer*>(glPipeline->GetPipelineConstants());
 	uint32_t uiPushConstantUBO = glBufferUBO->GetBufferID();
+	uint32_t uiBindingPoint = OpenGLUtils::ToGLBufferBindingPoint(glBufferUBO->GetBindingPoint());
 
 	if (uiPushConstantUBO == 0)
 	{
@@ -109,7 +121,7 @@ void COpenGLCommandList::PushConstants(const void* data, uint32_t size, uint32_t
 	glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 
 	// 5. Ensure it is bound to the correct block binding slot (e.g., slot 0)
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uiPushConstantUBO);
+	glBindBufferBase(GL_UNIFORM_BUFFER, uiBindingPoint, uiPushConstantUBO);
 }
 
 void COpenGLCommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)

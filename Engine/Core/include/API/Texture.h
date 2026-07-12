@@ -104,7 +104,7 @@ struct STextureDesc
     bool                    m_bEnableAnisotropy = true;
     float                   m_fMaxAnisotropy = 16.0f;
     bool                    m_bEnableCompare = false; // useful for shadow maps later
-
+    bool                    m_bIsValid = true;
     SVulkanTextureDesc		m_vkTextureDesc = {};
 };
 
@@ -114,6 +114,7 @@ public:
     virtual ~ITexture2D() = default;
     virtual uint32_t GetWidth() const = 0;
     virtual uint32_t GetHeight() const = 0;
+    virtual bool IsValid() const = 0;
 
 protected:
     // Texture Properties
@@ -137,4 +138,5 @@ protected:
     bool                    m_bEnableAnisotropy = true;
     float                   m_fMaxAnisotropy = 16.0f;
     bool                    m_bEnableCompare = false; // useful for shadow maps later
+    bool                    m_bIsValid = false;
 };

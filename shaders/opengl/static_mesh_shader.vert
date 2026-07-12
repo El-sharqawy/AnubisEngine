@@ -8,7 +8,7 @@
     // OpenGL doesn't use descriptor sets, so we ignore the set parameter
     #define SET_BINDING(set_idx, bind_idx) layout(binding = bind_idx)
     // OpenGL uses uniforms instead of push constants
-    #define PUSH_CONSTANT layout(std140, binding = 0) uniform
+    #define PUSH_CONSTANT layout(std140, binding = 3) uniform
 #endif
 
 // Vertex Inputs (Compatible with both)

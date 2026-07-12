@@ -1,4 +1,5 @@
 #include "OpenGL/OpenGLBuffer.h"
+#include "Logging/LogManager.h"
 
 static constexpr size_t SLICE_ALIGNMENT = 256;
 static constexpr size_t SUB_ALIGNMENT = 16;
@@ -60,6 +61,8 @@ void COpenGLBuffer::UpdateBufferData(const SBufferDesc& bufferDesc, uint32_t uiB
 	m_eType = bufferDesc.m_eType;
 	m_eMemoryType = bufferDesc.m_eMemoryType;
 	m_eBindingPoint = bufferDesc.m_eBindingPoint;
+
+	syslog("Buffer {} bound to point : {}", m_stName, static_cast<uint32_t>(bufferDesc.m_eBindingPoint));
 	m_uiSize = bufferDesc.m_uiSize;
 	m_bIsValid = true;
 }

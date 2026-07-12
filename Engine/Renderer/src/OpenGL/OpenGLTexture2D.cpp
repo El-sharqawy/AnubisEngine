@@ -25,7 +25,7 @@ void COpenGLTexture2D::Clear()
     m_bEnableAnisotropy = true;
     m_fMaxAnisotropy = 16.0f;
     m_bEnableCompare = false;
-
+    m_bIsValid = false;
 }
 void COpenGLTexture2D::UpdateTextureData(const STextureDesc& textureDesc, const STextureData& textureData)
 {
@@ -55,6 +55,7 @@ void COpenGLTexture2D::UpdateTextureData(const STextureDesc& textureDesc, const 
     m_bEnableAnisotropy = textureDesc.m_bEnableAnisotropy;
     m_fMaxAnisotropy = textureDesc.m_fMaxAnisotropy;
     m_bEnableCompare = textureDesc.m_bEnableCompare;
+    m_bIsValid = textureDesc.m_bIsValid;
 }
 
 uint32_t COpenGLTexture2D::GetTextureID() const
@@ -75,4 +76,9 @@ uint32_t COpenGLTexture2D::GetHeight() const
 std::string COpenGLTexture2D::GetName() const
 {
     return (m_stName);
+}
+
+bool COpenGLTexture2D::IsValid() const
+{
+    return (m_bIsValid && m_uiTextureID != 0);
 }

@@ -30,7 +30,8 @@ enum class EBufferMemoryType
 enum class EBufferBindingPoints
 {
 	BINDING_POINT_NONE, // Not bound to any point
-	BINDING_POINT_CAMERA_UBO,
+	BINDING_POINT_CAMERA_UBO_FIRST,
+	BINDING_POINT_CAMERA_UBO_SECOND,
 	BINDING_POINT_MODEL_UBO,
 };
 
@@ -39,7 +40,7 @@ struct SBufferDesc
 	std::string m_stName = "Buffer";
 	EBufferType m_eType = EBufferType::BUFFER_TYPE_VERTEX;
 	EBufferMemoryType m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_GPU_ONLY;
-	EBufferBindingPoints m_eBindingPoint = EBufferBindingPoints::BINDING_POINT_CAMERA_UBO;
+	EBufferBindingPoints m_eBindingPoint = EBufferBindingPoints::BINDING_POINT_NONE;
 	uint64_t m_uiSize = 0;
 	bool cpuWrite = false;
 };

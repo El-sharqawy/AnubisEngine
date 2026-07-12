@@ -27,6 +27,8 @@ public:
 	uint32_t GetHeight() const override;
 	std::string GetName() const;
 
+	bool IsValid() const override;
+
 private:
 	uint32_t m_uiTextureID = 0;
 };

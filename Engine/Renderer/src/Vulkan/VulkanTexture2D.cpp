@@ -48,6 +48,7 @@ void CVulkanTexture2D::Clear()
     m_bEnableAnisotropy = true;
     m_fMaxAnisotropy = 16.0f;
     m_bEnableCompare = false;
+    m_bIsValid = false;
 
     m_vkTextureDesc = {};
 }
@@ -87,6 +88,7 @@ void CVulkanTexture2D::UpdateTextureData(const SVulkanTexture2DInfo& textureInfo
     m_bEnableAnisotropy = textureDesc.m_bEnableAnisotropy;
     m_fMaxAnisotropy = textureDesc.m_fMaxAnisotropy;
     m_bEnableCompare = textureDesc.m_bEnableCompare;
+    m_bIsValid = textureDesc.m_bIsValid;
 }
 
 uint32_t CVulkanTexture2D::GetWidth() const
@@ -104,3 +106,7 @@ std::string CVulkanTexture2D::GetName() const
     return (m_stName);
 }
 
+bool CVulkanTexture2D::IsValid() const
+{
+    return (m_bIsValid);
+}

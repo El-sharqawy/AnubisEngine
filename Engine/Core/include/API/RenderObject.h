@@ -5,12 +5,16 @@
 #include "API/Buffer.h"
 #include "TypeMatrix4.h"
 
+class CVertexArray;
+
 struct SRenderItem
 {
     IPipeline* pPipeline = nullptr;
     IMaterial* pMaterial = nullptr;
     IBuffer* pVertexBuffer = nullptr;
     IBuffer* pIndexBuffer = nullptr;
+
+    CVertexArray* pVertexArray = nullptr;
 
     uint32_t    indexCount = 0;
     uint32_t    firstIndex = 0;

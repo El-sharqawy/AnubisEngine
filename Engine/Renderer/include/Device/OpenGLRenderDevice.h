@@ -3,6 +3,8 @@
 #include "API/RenderDevice.h"
 #include "VulkanModel/StaticModel.h"
 #include "OpenGL/OpenGLVertexArray.h"
+#include "OpenGL/OpenGLCommandList.h"
+#include "OpenGL/OpenGLRenderer.h"
 #include <glad/gl.h>
 
 struct SGLContext
@@ -53,8 +55,12 @@ protected:
     bool CreateFrameResources();
     void SetupDebugOutput();
     static void APIENTRY MyDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+    void UpdateUniformBuffers(uint32_t currFrame);
+
 private:
     EGraphicsAPI m_eGraphicsAPI = EGraphicsAPI::API_OPENGL;
+    std::unique_ptr<COpenGLCommandList> m_pOpenGLCommandList = nullptr;
+    std::unique_ptr<COpenGLRenderer> m_pOpenGLRenderer = nullptr;
 
     // GLFWwindow
     GLFWwindow* m_pGLFWwindow = nullptr;
@@ -63,6 +69,6 @@ private:
     uint32_t m_uiCurrentFrame = 0;
 
     // Camera Matrix
-    std::vector<IBuffer*> m_vpUniformBuffer = {};
+    IBuffer* m_pCameraUBO = nullptr;
     CStaticModel* m_pStaticModel = nullptr;
 };

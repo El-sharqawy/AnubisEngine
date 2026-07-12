@@ -6,7 +6,7 @@ int main()
 {
 	CAnubisEngine engine; // First Declaration of singleton
 
-	if (!engine.Initialize(EGraphicsAPI::API_VULKAN))
+	if (!engine.Initialize(EGraphicsAPI::API_OPENGL))
 	{
 		printf("Failed to Initialize The Engine\n");
 		return (EXIT_FAILURE);

@@ -4,6 +4,7 @@
 #include "API/CommandList.h"
 
 class COpenGLPipeline;
+class CVertexArray;
 
 class COpenGLCommandList : public ICommandList
 {
@@ -20,6 +21,7 @@ public:
     void BindPipeline(IPipeline* pipeline) override;
     void BindVertexBuffer(IBuffer* buffer, uint64_t offset = 0) override;
     void BindIndexBuffer(IBuffer* buffer, EIndexType type, uint64_t offset = 0) override;
+    void BindVertexArray(CVertexArray* pVAO);
     void BindMaterial(IMaterial* material, uint32_t frameIndex) override;
     void PushConstants(const void* data, uint32_t size, uint32_t offset = 0) override;
 

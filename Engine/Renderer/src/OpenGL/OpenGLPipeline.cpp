@@ -22,6 +22,7 @@ bool COpenGLPipeline::Initialize(const SPipelineDesc& desc)
 		bufferDesc.m_stName = "Model UBO";
 		bufferDesc.m_eType = EBufferType::BUFFER_TYPE_UNIFORM;
 		bufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
+		bufferDesc.m_eBindingPoint = EBufferBindingPoints::BINDING_POINT_MODEL_UBO;
 		bufferDesc.m_uiSize = sizeof(SUniformBufferBlockModel);
 		bufferDesc.cpuWrite = true;
 
@@ -43,6 +44,12 @@ void COpenGLPipeline::Destroy()
 	{
 		renderDev.DestroyShaderProgram(m_pPipelineShader);
 		AnubisSafeDelete(m_pPipelineShader);
+	}
+
+	if (m_pPipelineConstants)
+	{
+		renderDev.DestroyBuffer(m_pPipelineConstants);
+		AnubisSafeDelete(m_pPipelineConstants);
 	}
 }
 

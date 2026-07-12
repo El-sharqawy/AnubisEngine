@@ -9,6 +9,7 @@
 #include "OpenGL/OpenGLPipeline.h"
 #include "OpenGL/OpenGLShader.h"
 #include "OpenGL/OpenGLUtils.h"
+#include "Camera/Camera.h"
 
 #define ENABLE_DEBUG_LOGS
 
@@ -36,31 +37,29 @@ bool COpenGLRenderDevice::Initialize(GLFWwindow* pPlatformWindowHandle)
 	SetupDebugOutput();
 #endif
 
-	m_vpUniformBuffer.resize(MAX_FRAMES_IN_FLIGHT);
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	SBufferDesc cameraUniformBufferDesc{};
+	cameraUniformBufferDesc.m_stName = "Camera Uniform Buffer";
+	cameraUniformBufferDesc.m_eType = EBufferType::BUFFER_TYPE_UNIFORM;
+	cameraUniformBufferDesc.m_uiSize = sizeof(SUniformBufferBlock);
+	cameraUniformBufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
+	cameraUniformBufferDesc.m_eBindingPoint = EBufferBindingPoints::BINDING_POINT_CAMERA_UBO_FIRST;
+	cameraUniformBufferDesc.cpuWrite = true;
+
+	m_pCameraUBO = CreateBuffer(cameraUniformBufferDesc);
+	if (!m_pCameraUBO)
 	{
-		SBufferDesc uniformBufferDesc{};
-		uniformBufferDesc.m_stName = "Camera Uniform Buffer";
-		uniformBufferDesc.m_eType = EBufferType::BUFFER_TYPE_UNIFORM;
-		uniformBufferDesc.m_uiSize = sizeof(SUniformBufferBlock);
-		uniformBufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
-		uniformBufferDesc.cpuWrite = true;
-
-		IBuffer* pBuffer = CreateBuffer(uniformBufferDesc);
-		if (!pBuffer)
-		{
-			return (false);
-		}
-
-		m_vpUniformBuffer[i] = pBuffer;
+		return (false);
 	}
 
-	m_pStaticModel = AnubisNew(CStaticModel, MEM_TAG_RENDERING);
-	m_pStaticModel->ImportModel("Assets/Models/Female/SK_Shaman_4_1.fbx", m_vpUniformBuffer);
-	m_pStaticModel->UploadToGPU();
+	m_pOpenGLCommandList = std::make_unique<COpenGLCommandList>();
+	m_pOpenGLRenderer = std::make_unique<COpenGLRenderer>();
 
 	CTexturesManager::Instance().Initialize();
 	CPipelinesManager::Instance().Initialize();
+
+	m_pStaticModel = AnubisNew(CStaticModel, MEM_TAG_RENDERING);
+	m_pStaticModel->ImportModel("Assets/Models/Female/SK_Shaman_4_1.fbx", { m_pCameraUBO });
+	m_pStaticModel->UploadToGPU();
 
 	return (true);
 }
@@ -77,12 +76,9 @@ void COpenGLRenderDevice::Shutdown()
 		m_pStaticModel = nullptr;
 	}
 
-	for (auto& buffer : m_vpUniformBuffer)
-	{
-		DestroyBuffer(buffer);
-		AnubisSafeDelete(buffer);
-		buffer = nullptr;
-	}
+	DestroyBuffer(m_pCameraUBO);
+	AnubisSafeDelete(m_pCameraUBO);
+	m_pCameraUBO = nullptr;
 
 	gladLoaderUnloadGL();
 }
@@ -105,7 +101,19 @@ void COpenGLRenderDevice::EndFrame()
 void COpenGLRenderDevice::Present()
 {
 	// Render Stuff
-	// UpdateUniformBuffers();
+	UpdateUniformBuffers(m_uiCurrentFrame);
+
+	if (m_pStaticModel)
+	{
+		std::vector<SRenderItem> renderItems = m_pStaticModel->BuildRenderItems();
+		m_pOpenGLRenderer->SubimtRenderItems(renderItems);
+	}
+
+	ICommandList* cmd = GetCommandList();
+
+	m_pOpenGLRenderer->FlushRenderItems(cmd);
+
+	m_uiCurrentFrame = (m_uiCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 uint32_t COpenGLRenderDevice::GetCurrentFrameIndex() const
@@ -502,9 +510,6 @@ CVertexArray* COpenGLRenderDevice::CreateVertexArray(const SVertexArrayDesc& ver
 
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIndexBuffer->GetBufferID());
 			}
-
-			glBindVertexArray(0);
-
 		}
 	}
 
@@ -737,6 +742,7 @@ bool COpenGLRenderDevice::UpdateBuffer(IBuffer* pBuffer, const void* pData, size
 		if (glBuffer->IsBoundToBase())
 		{
 			glBindBufferBase(bufferType, eBingingPoint, glBuffer->GetBufferID());
+			syslog("Buffer: {} is bound to point {}", glBuffer->GetName(), static_cast<uint32_t>(glBuffer->GetBindingPoint()));
 		}
 	}
 	else
@@ -758,15 +764,12 @@ bool COpenGLRenderDevice::UpdateBuffer(IBuffer* pBuffer, const void* pData, size
 
 	}
 
-#if defined(ENABLE_DEBUG_LOGS)
-	syslog("{} — {} bytes at offset {}", glBuffer->GetName(), size, dstOffset);
-#endif
 	return (true);
 }
 
 ICommandList* COpenGLRenderDevice::GetCommandList()
 {
-	return (nullptr);
+	return (m_pOpenGLCommandList.get());
 }
 
 void COpenGLRenderDevice::Resize(int32_t width, int32_t height)
@@ -801,6 +804,11 @@ bool COpenGLRenderDevice::LoadExtensions()
 	// Match Vulkan matrix, depth [0 .. 1]
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
+	glDisable(GL_CULL_FACE);
+
 	return (true);
 }
 
@@ -831,5 +839,28 @@ void APIENTRY COpenGLRenderDevice::MyDebugCallback(GLenum source, GLenum type, G
 	}
 
 	syslog("{}", message);
+}
+
+void COpenGLRenderDevice::UpdateUniformBuffers(uint32_t currFrame)
+{
+	auto& windowMgr = CServiceLocator::Get<CWindowManager>();
+
+	static auto startTime = std::chrono::high_resolution_clock::now();
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	SUniformBufferBlock bufferBlock{};
+
+	bufferBlock.matView = windowMgr.GetCamera()->GetViewMatrix();
+
+	bufferBlock.matProjection = windowMgr.GetCamera()->GetProjectionMatrix();
+	// bufferBlock.matProjection[1][1] *= -1.0f;
+
+	bufferBlock.matViewProjection = bufferBlock.matProjection * bufferBlock.matView;
+
+	SUniformBufferBlockModel bufferModelBlock{};
+	bufferModelBlock.matModel = Matrix4(1.0f);
+
+	UpdateBuffer(m_pCameraUBO, &bufferBlock, sizeof(SUniformBufferBlock), 0);
 }
 

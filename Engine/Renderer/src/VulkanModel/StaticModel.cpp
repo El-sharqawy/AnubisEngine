@@ -12,6 +12,7 @@
 #include "EngineMathQuaternion.h"
 #include <memory>
 #include "Device/PipelinesManager.h"
+#include "OpenGL/OpenGLTexture2D.h"
 
 bool CStaticModel::ImportModel(const std::filesystem::path& filePath, const std::vector<IBuffer*>& vpUniformBuffer, const SModelImportOptions& options)
 {
@@ -643,6 +644,7 @@ std::vector<SRenderItem> CStaticModel::BuildRenderItems()
         item.pMaterial = GetMaterial(batch.materialIndex);
         item.pVertexBuffer = m_pVertexBuffer;
         item.pIndexBuffer = m_pIndexBuffer;
+        item.pVertexArray = m_pVertexArray;
         item.indexCount = batch.indexCount;
         item.firstIndex = batch.firstIndex;
         item.modelMatrix = GetModelMatrix();
@@ -700,6 +702,11 @@ bool CStaticModel::InitializeMaterialBindings(const std::vector<IBuffer*>& vpUni
         ctxDesc.m_vImageResources.push_back({ 4, material->GetMaterialPBRNormalMap() ? material->GetMaterialPBRNormalMap() : pFallbackNormal });
         ctxDesc.m_vImageResources.push_back({ 5, material->GetMaterialPBRMetallicMap() ? material->GetMaterialPBRMetallicMap() : pFallbackWhite });
         ctxDesc.m_vImageResources.push_back({ 6, material->GetMaterialPBRRoughnessMap() ? material->GetMaterialPBRRoughnessMap() : pFallbackWhite });
+
+        syslog("fallback white tex ptr={} id={} valid={}",
+            (void*)pFallbackWhite,
+            pFallbackWhite ? static_cast<COpenGLTexture2D*>(pFallbackWhite)->GetTextureID() : 0,
+            pFallbackWhite ? static_cast<COpenGLTexture2D*>(pFallbackWhite)->IsValid() : false);
 
         SBindingBufferResource bufferRes{};
         bufferRes.m_uiBinding = 0;

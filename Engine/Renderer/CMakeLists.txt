@@ -24,6 +24,7 @@ set(Core_Sources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenGL/OpenGLCommandList.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenGL/OpenGLMaterial.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenGL/OpenGLPipeline.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenGL/OpenGLRenderer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenGL/OpenGLShader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenGL/OpenGLTexture2D.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/OpenGL/OpenGLUtils.cpp
@@ -56,6 +57,7 @@ set(Core_Headers
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/OpenGL/OpenGLCommandList.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/OpenGL/OpenGLMaterial.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/OpenGL/OpenGLPipeline.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/OpenGL/OpenGLRenderer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/OpenGL/OpenGLShader.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/OpenGL/OpenGLTexture2D.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/OpenGL/OpenGLUtils.h
