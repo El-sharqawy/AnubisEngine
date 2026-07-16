@@ -1,11 +1,12 @@
 #pragma once
 
 #include "API/RenderDevice.h"
-#include "VulkanModel/StaticModel.h"
 #include "OpenGL/OpenGLVertexArray.h"
 #include "OpenGL/OpenGLCommandList.h"
 #include "OpenGL/OpenGLRenderer.h"
 #include <glad/gl.h>
+
+class CActor;
 
 struct SGLContext
 {
@@ -55,7 +56,6 @@ protected:
     bool CreateFrameResources();
     void SetupDebugOutput();
     static void APIENTRY MyDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
-    void UpdateUniformBuffers(uint32_t currFrame);
 
 private:
     EGraphicsAPI m_eGraphicsAPI = EGraphicsAPI::API_OPENGL;
@@ -65,10 +65,4 @@ private:
     // GLFWwindow
     GLFWwindow* m_pGLFWwindow = nullptr;
     SGLContext m_gContext = {};
-
-    uint32_t m_uiCurrentFrame = 0;
-
-    // Camera Matrix
-    IBuffer* m_pCameraUBO = nullptr;
-    CStaticModel* m_pStaticModel = nullptr;
 };

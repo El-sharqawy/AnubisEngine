@@ -66,14 +66,3 @@ struct SStaticMeshVertex
         return attributeDescriptions;
     }
 };
-
-class CStaticMeshShaderLayout
-{
-public:
-    static VkDescriptorSetLayout Get(const SVulkanContext& context); // built once, lazily, cached statically
-    static const std::vector<SBindingDesc>& GetBindings();
-    static void Destroy(const SVulkanContext& context);
-
-private:
-    static VkDescriptorSetLayout m_vksDscriptorLayout;
-};

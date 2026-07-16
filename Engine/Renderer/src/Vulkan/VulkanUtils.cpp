@@ -25,7 +25,7 @@ std::vector<uint32_t> VulkanUtils::ReadShaderData(const std::string& filename)
 
 	if (fileSize % sizeof(uint32_t) != 0)
 	{
-		printf("SPIR-V file size is not a multiple of 4: {}", filename.c_str());
+		syserr("SPIR-V file size is not a multiple of 4: {}", filename.c_str());
 		file.close();
 		return {};
 	}
@@ -39,7 +39,7 @@ std::vector<uint32_t> VulkanUtils::ReadShaderData(const std::string& filename)
 	// Read directly into the uint32_t buffer data pointer safely casted
 	if (!file.read(reinterpret_cast<char*>(buffer.data()), fileSize))
 	{
-		printf("Failed to read shader file: %s\n", filename.c_str());
+		syserr("Failed to read shader file: {}", filename.c_str());
 		file.close();
 		return {};
 	}
@@ -380,7 +380,6 @@ VkDescriptorType VulkanUtils::ToVkDescriptorType(EBindingType type)
 {
 	switch (type)
 	{
-
 	case EBindingType::BIND_TYPE_SAMPLER:
 		return VK_DESCRIPTOR_TYPE_SAMPLER;
 

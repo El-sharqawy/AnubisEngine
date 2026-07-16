@@ -82,7 +82,7 @@ using UIVertex = SUIVertex;
 
 #define MAX_BONE_INFLUENCE 4
 
-typedef struct SAnimatedMeshVertex
+typedef struct SSkeletalMeshVertex
 {
 	// Basic geometry
 	SVector3Df position;     // vec3
@@ -100,9 +100,9 @@ typedef struct SAnimatedMeshVertex
 	int32_t boneIndices[MAX_BONE_INFLUENCE];  // indices into a bone palette
 	float   boneWeights[MAX_BONE_INFLUENCE];  // weights, usually sum to 1.0
 
-	SAnimatedMeshVertex() = default;
+	SSkeletalMeshVertex() = default;
 
-	SAnimatedMeshVertex(const SVector3Df& pos,
+	SSkeletalMeshVertex(const SVector3Df& pos,
 		const SVector3Df& nrm,
 		const SVector2Df& uv,
 		const SVector3Df& tang = SVector3Df(0.f, 0.f, 0.f),

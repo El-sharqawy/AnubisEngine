@@ -5,6 +5,7 @@
 enum class EPipelineType
 {
     PIPELINE_TYPE_STATIC_MESH,
+    PIPELINE_TYPE_SKELETAL_MESH,
 };
 
 struct SVertexBindingDesc
@@ -17,6 +18,17 @@ struct SVertexAttributeDesc
     uint32_t location = 0;
     uint32_t offset = 0;
     uint32_t size = 0;
+};
+
+struct GLStateCache
+{
+    bool depthTest = false;
+    bool cullFace = false;
+    GLboolean depthWrite = GL_TRUE;
+    GLenum depthFunc = GL_LESS;
+    GLenum polygonMode = GL_FILL;
+    GLenum cullMode = GL_BACK;
+    GLenum frontFace = GL_CCW;
 };
 
 struct SPipelineDesc
@@ -38,6 +50,7 @@ struct SPipelineDesc
     EPolygonMode polygonMode = EPolygonMode::POLYGON_MODE_FILL;
     EDepthCompareOp depthCompareOp = EDepthCompareOp::DEPTH_LESS;
 
+    bool cullFace = true;
     bool depthTest = true;
     bool depthWrite = true;
     bool blending = false;

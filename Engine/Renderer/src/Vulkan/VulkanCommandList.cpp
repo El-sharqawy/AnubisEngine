@@ -92,6 +92,24 @@ void CVulkanCommandList::BindMaterial(IMaterial* material, uint32_t frameIndex)
 	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pBoundPipeline->GetPipelineLayout(), 0, 1, &set, 0, nullptr);
 }
 
+void CVulkanCommandList::BindFrameDescriptorSet(VkDescriptorSet set)
+{
+	assert(m_pBoundPipeline != nullptr);
+
+	VkCommandBuffer cmd = GetActiveCommandBuffer();
+
+	vkCmdBindDescriptorSets(
+		cmd,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		m_pBoundPipeline->GetPipelineLayout(),
+		1, // set 0 = frame/global
+		1,
+		&set,
+		0,
+		nullptr);
+
+}
+
 void CVulkanCommandList::PushConstants(const void* data, uint32_t size, uint32_t offset)
 {
 	assert(data != nullptr);
@@ -100,7 +118,6 @@ void CVulkanCommandList::PushConstants(const void* data, uint32_t size, uint32_t
 	VkCommandBuffer cmd = GetActiveCommandBuffer();
 
 	vkCmdPushConstants(cmd, m_pBoundPipeline->GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, offset, size, data);
-
 }
 
 void CVulkanCommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)

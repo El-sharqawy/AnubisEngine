@@ -14,8 +14,10 @@ public:
 	EPipelineType GetPipelineType() const override;
 	IShaderProgram* GetPipelineShader() const;
 	IBuffer* GetPipelineConstants() const;
+	void SetGLToggle(GLenum cap, bool enable);
 
 private:
 	IShaderProgram* m_pPipelineShader = nullptr;
 	IBuffer* m_pPipelineConstants = nullptr;
+	GLStateCache m_gGLStateCache = {};
 };

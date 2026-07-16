@@ -9,7 +9,7 @@ std::vector<char> OpenGLUtils::ReadShaderData(const std::string& filename)
 
 	if (!file.is_open())
 	{
-		syserr("Failed to Open the file %s\n", filename.c_str());
+		syserr("Failed to Open the file {}", filename.c_str());
 		return {};
 	}
 
@@ -203,7 +203,7 @@ GLenum OpenGLUtils::ToGLBufferType(EBufferType bufferType)
 	}
 }
 
-GLenum OpenGLUtils::ToGLBufferBindingPoint(EBufferBindingPoints bufferBindingPoint)
+GLenum OpenGLUtils::ToGLBufferBindingPoint(EBufferBindingPointsSetOne bufferBindingPoint)
 {
 	return (static_cast<uint32_t>(bufferBindingPoint));
 }
@@ -438,5 +438,89 @@ GLenum OpenGLUtils::ToGLShaderType(EShaderStage shaderStage)
 	default:
 		syserr("Unknown GL Shader Stage {}", static_cast<uint32_t>(shaderStage));
 		return (GL_VERTEX_SHADER);
+	}
+}
+
+GLenum OpenGLUtils::ToGLPolygonMode(EPolygonMode polygonMode)
+{
+	switch (polygonMode)
+	{
+	case EPolygonMode::POLYGON_MODE_FILL:
+		return (GL_FILL);
+
+	case EPolygonMode::POLYGON_MODE_LINE:
+		return (GL_LINE);
+
+	case EPolygonMode::POLYGON_MODE_POINT:
+		return (GL_POINT);
+
+	default:
+		syserr("Unknown GL Polygon Mode {}", static_cast<uint32_t>(polygonMode));
+		return (GL_FILL);
+	}
+}
+
+GLenum OpenGLUtils::ToGLCullFace(ECullMode cullMode)
+{
+	switch (cullMode)
+	{
+	case ECullMode::CULL_MODE_NONE:
+		return (GL_NONE);
+
+	case ECullMode::CULL_MODE_BACK:
+		return (GL_BACK);
+
+	case ECullMode::CULL_MODE_FRONT:
+		return (GL_FRONT);
+
+	default:
+		syserr("Unknown GL Cull Face {}", static_cast<uint32_t>(cullMode));
+		return (GL_BACK);
+
+	}
+	return GLenum();
+}
+
+GLenum OpenGLUtils::ToGLFrontFace(EFrontFace frontFace)
+{
+	switch (frontFace)
+	{
+	case EFrontFace::FRONT_FACE_CLOCKWISE:
+		return (GL_CW);
+
+	case EFrontFace::FRONT_FACE_COUNTER_CLOCKWISE:
+		return (GL_CCW);
+
+	default:
+		syserr("Unknown GL Front Face {}", static_cast<uint32_t>(frontFace));
+		return (GL_CCW);
+	}
+}
+
+GLenum OpenGLUtils::ToGLDepthFunc(EDepthCompareOp depthCompareOp)
+{
+	switch (depthCompareOp)
+	{
+	case EDepthCompareOp::DEPTH_NEVER:
+		return (GL_NEVER);
+	case EDepthCompareOp::DEPTH_LESS:
+		return (GL_LESS);
+	case EDepthCompareOp::DEPTH_EQUAL:
+		return (GL_EQUAL);
+	case EDepthCompareOp::DEPTH_LESS_OR_EQUAL:
+		return (GL_LEQUAL);
+	case EDepthCompareOp::DEPTH_GREATER:
+		return (GL_GREATER);
+	case EDepthCompareOp::DEPTH_NOT_EQUAL:
+		return (GL_NOTEQUAL);
+	case EDepthCompareOp::DEPTH_GREATER_OR_EQUAL:
+		return (GL_GEQUAL);
+	case EDepthCompareOp::DEPTH_ALWAYS:
+		return (GL_ALWAYS);
+
+	default:
+		// Fallback to the OpenGL hardware default
+		syserr("Unknown GL Depth Compare Function {}", static_cast<uint32_t>(depthCompareOp));
+		return GL_LESS;
 	}
 }

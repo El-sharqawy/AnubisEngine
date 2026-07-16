@@ -9,9 +9,9 @@
  */
 struct STransform
 {
-	Vector3D m_v3Position;	// Translation vector
-	Quaternion m_qOrientation;	// Quaternion representation of rotation
-	Vector3D m_v3Scale;		// Scale factors along each axis
+	Vector3D m_v3Position = {};	// Translation vector
+	Quaternion m_qOrientation = {};	// Quaternion representation of rotation
+	Vector3D m_v3Scale = {};		// Scale factors along each axis
 
 	mutable bool m_bMatrixDirty = true; // Flag indicating if the cached matrix needs updating
 	mutable Matrix4 m_CachedMatrix; // Cached transformation matrix

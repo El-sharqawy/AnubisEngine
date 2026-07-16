@@ -23,6 +23,10 @@ bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 	CServiceLocator::Register(&config_manager);
 	CServiceLocator::Register(&input_manager);
 	CServiceLocator::Register(&window_manager);
+	CServiceLocator::Register(&assimp_model_importer);
+	CServiceLocator::Register(&actors_manager);
+	CServiceLocator::Register(&animations_manager);
+	CServiceLocator::Register(&render_queue);
 
 	CIRenderDevice* pRenderDevice = CreateRenderDevice(api).release();
 
@@ -279,7 +283,9 @@ void CAnubisEngine::HandleInput(float deltaTime)
 void CAnubisEngine::Update(float deltaTime)
 {
 	auto& window = CServiceLocator::Get<CWindowManager>();
+	auto& actorsMgr = CServiceLocator::Get<CActorsManager>();
 	window.Update(deltaTime);
+	actorsMgr.Update(deltaTime);
 }
 
 void CAnubisEngine::Render(float deltaTime)

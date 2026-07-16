@@ -21,7 +21,7 @@ layout(location = 0) out vec2 fragTexCoord;
 
 // --- Modern Path: Uses SSBO and gl_DrawID ---
 // Camera UBO
-SET_BINDING(0, 0) uniform SCameraUBO
+layout(std140, binding = 0) uniform SCameraUBO
 {
     mat4 view;
     mat4 proj;
@@ -29,7 +29,7 @@ SET_BINDING(0, 0) uniform SCameraUBO
 } cameraUBO;
 
 // Model Data (Push Constant for Vulkan, Uniform Block for OpenGL)
-PUSH_CONSTANT PushModel
+layout(std140, binding = 3) uniform PushModel
 {
     mat4 model;
 } modelData;

@@ -36,7 +36,7 @@ namespace OpenGLUtils
     GLbitfield ToGLBufferStorageFlags(EBufferMemoryType bufferMemoryType);
     GLenum ToGLBufferUsage(EBufferMemoryType bufferMemoryType);
     GLenum ToGLBufferType(EBufferType bufferType);
-    GLenum ToGLBufferBindingPoint(EBufferBindingPoints bufferBindingPoint);
+    GLenum ToGLBufferBindingPoint(EBufferBindingPointsSetOne bufferBindingPoint);
 
     // Textures
     GLenum ToGLTextureType(ETextureType textureType);
@@ -49,4 +49,10 @@ namespace OpenGLUtils
 
     // Shaders
     GLenum ToGLShaderType(EShaderStage shaderStage);
+
+    // Pipeline
+    GLenum ToGLPolygonMode(EPolygonMode polygonMode);
+    GLenum ToGLCullFace(ECullMode cullMode);
+    GLenum ToGLFrontFace(EFrontFace frontFace);
+    GLenum ToGLDepthFunc(EDepthCompareOp depthCompareOp);
 }

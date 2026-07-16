@@ -11,7 +11,7 @@ COpenGLBuffer::COpenGLBuffer(COpenGLBuffer&& other) noexcept
 	m_stName = std::move(other.m_stName);
 	m_eType = std::exchange(other.m_eType, EBufferType::BUFFER_TYPE_VERTEX);
 	m_eMemoryType = std::exchange(other.m_eMemoryType, EBufferMemoryType::BUFFER_MEMORY_GPU_ONLY);
-	m_eBindingPoint = std::exchange(other.m_eBindingPoint, EBufferBindingPoints::BINDING_POINT_NONE);
+	m_eBindingPoint = std::exchange(other.m_eBindingPoint, EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MAX);
 	m_uiSize = std::exchange(other.m_uiSize, 0);
 	m_bIsValid = std::exchange(other.m_bIsValid, false);
 }
@@ -34,7 +34,7 @@ COpenGLBuffer& COpenGLBuffer::operator=(COpenGLBuffer&& other) noexcept
 	m_stName = std::move(other.m_stName);
 	m_eType = std::exchange(other.m_eType, EBufferType::BUFFER_TYPE_VERTEX);
 	m_eMemoryType = std::exchange(other.m_eMemoryType, EBufferMemoryType::BUFFER_MEMORY_GPU_ONLY);
-	m_eBindingPoint = std::exchange(other.m_eBindingPoint, EBufferBindingPoints::BINDING_POINT_NONE);
+	m_eBindingPoint = std::exchange(other.m_eBindingPoint, EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MAX);
 	m_uiSize = std::exchange(other.m_uiSize, 0);
 	m_bIsValid = std::exchange(other.m_bIsValid, false);
 
@@ -48,7 +48,7 @@ void COpenGLBuffer::Clear()
     m_stName = "Buffer";
     m_eType = EBufferType::BUFFER_TYPE_VERTEX;
     m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_GPU_ONLY;
-	m_eBindingPoint = EBufferBindingPoints::BINDING_POINT_NONE;
+	m_eBindingPoint = EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MAX;
     m_uiSize = 0;
     m_bIsValid = false;
 }
@@ -60,21 +60,20 @@ void COpenGLBuffer::UpdateBufferData(const SBufferDesc& bufferDesc, uint32_t uiB
 	m_stName = bufferDesc.m_stName;
 	m_eType = bufferDesc.m_eType;
 	m_eMemoryType = bufferDesc.m_eMemoryType;
-	m_eBindingPoint = bufferDesc.m_eBindingPoint;
+	m_eBindingPoint = bufferDesc.m_eBindingPointOne;
 
-	syslog("Buffer {} bound to point : {}", m_stName, static_cast<uint32_t>(bufferDesc.m_eBindingPoint));
 	m_uiSize = bufferDesc.m_uiSize;
 	m_bIsValid = true;
 }
 
-void COpenGLBuffer::SetBindingPoint(EBufferBindingPoints eBindingPt)
+void COpenGLBuffer::SetBindingPoint(EBufferBindingPointsSetOne eBindingPt)
 {
 	m_eBindingPoint = eBindingPt;
 }
 
 bool COpenGLBuffer::IsBoundToBase() const
 {
-	return m_eBindingPoint != EBufferBindingPoints::BINDING_POINT_NONE;
+	return m_eBindingPoint != EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MAX;
 }
 
 void COpenGLBuffer::UpdateBufferID(uint32_t uiNewBufferID)

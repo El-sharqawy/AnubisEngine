@@ -1,6 +1,15 @@
 #include "Vulkan/VulkanRenderer.h"
 #include "Vulkan/VulkanSwapchain.h"
+#include "Vulkan/VulkanDescriptorContext.h"
+#include "Vulkan/VulkanDescriptorSet.h"
+#include "Vulkan/VulkanBuffer.h"
 #include "Device/VulkanRenderDevice.h"
+#include "Services/RenderQueue.h"
+#include "Window/WindowManager.h"
+#include "Camera/Camera.h"
+#include "Actor/SkeletalActor.h"
+#include "Services/ActorsManager.h"
+#include "Services/AssimpModelImporter.h"
 
 bool CVulkanRenderer::Initialize()
 {
@@ -19,11 +28,44 @@ bool CVulkanRenderer::Initialize()
 		return false;
 	}
 
+	if (!CreateFrameDescriptorContext())
+	{
+		syserr("Faile to Initialize Frame Descriptor Context");
+		return (false);
+	}
+
+	auto& assimpImporter = CServiceLocator::Get<CAssimpModelImporter>();
+	auto& actorsMgr = CServiceLocator::Get<CActorsManager>();
+	const SActorInfo pInfo = actorsMgr.GetActorInfo("Warrior_Male");
+	m_pActor = pInfo.pActor;
+
+	std::shared_ptr<CSkeletalActor> pSkeletalActor = std::dynamic_pointer_cast<CSkeletalActor>(m_pActor);
+	pSkeletalActor->GetAnimator()->SetAnimationLibrary(pSkeletalActor->GetSkeletalAsset()->GetAnimations());
+	pSkeletalActor->GetAnimator()->PlayAnimation("WarriorMale/OnehandSword/Idle", true);
+
 	return (true);
 }
 
 void CVulkanRenderer::Shutdown()
 {
+	auto& renderDev = CServiceLocator::Get<CIRenderDevice>();
+
+	m_pFrameDescriptorContext->Destroy();
+
+	for (auto& buffer : m_vCameraUBO)
+	{
+		renderDev.DestroyBuffer(buffer);
+		AnubisSafeDelete(buffer);
+		buffer = nullptr;
+	}
+
+	for (auto& buffer : m_vJointsBuffer)
+	{
+		renderDev.DestroyBuffer(buffer);
+		AnubisSafeDelete(buffer);
+		buffer = nullptr;
+	}
+
 	m_pVulkanSyncObject->Destroy();
 
 	FreeCommandBuffers();
@@ -78,6 +120,23 @@ VkCommandBuffer CVulkanRenderer::BeginFrame()
 	}
 
 	return commandBuffer;
+}
+
+void CVulkanRenderer::Present()
+{
+	UpdateRendererBuffers();
+
+	auto& renderQueue = CServiceLocator::Get<CRenderQueue>();
+	std::vector<SRenderInstance> renderInstances{};
+
+	if (m_pActor)
+	{
+		if (m_pActor->GetAsset()->GetModelAsset())
+		{
+			m_pActor->BuildRenderItemsNew(renderInstances);
+			renderQueue.SubimtRenderItems(renderInstances);
+		}
+	}
 }
 
 void CVulkanRenderer::EndFrame()
@@ -150,18 +209,11 @@ void CVulkanRenderer::EndFrame()
 		syserr("Failed to present swapchain image");
 	}
 
+	auto& renderQueue = CServiceLocator::Get<CRenderQueue>();
+	renderQueue.EndFrame();
+
 	m_bFrameStarted = false;
 	m_uiCurrentFrame = (m_uiCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-}
-
-void CVulkanRenderer::SubmitRenderItem(const SRenderItem& renderItem)
-{
-	m_vRenderItems.push_back(renderItem);
-}
-
-void CVulkanRenderer::SubimtRenderItems(const std::vector<SRenderItem>& vRenderItems)
-{
-	m_vRenderItems.insert(m_vRenderItems.end(), vRenderItems.begin(), vRenderItems.end());
 }
 
 void CVulkanRenderer::FlushRenderItems(ICommandList* pCmd)
@@ -171,19 +223,33 @@ void CVulkanRenderer::FlushRenderItems(ICommandList* pCmd)
 		return;
 	}
 
-	std::sort(m_vRenderItems.begin(), m_vRenderItems.end(), [](const SRenderItem& a, const SRenderItem& b) { return a.sortKey < b.sortKey; });
+	CVulkanCommandList* vkCmd = dynamic_cast<CVulkanCommandList*>(pCmd);
 
-	for (const auto& renderItem : m_vRenderItems)
+	if (!vkCmd)
 	{
-		pCmd->BindPipeline(renderItem.pPipeline);
-		pCmd->BindVertexBuffer(renderItem.pVertexBuffer);
-		pCmd->BindIndexBuffer(renderItem.pIndexBuffer, EIndexType::INDEX_TYPE_UINT32);
+		return;
+	}
 
-		SPushConstantModel modelData{};
+	auto& renderQueue = CServiceLocator::Get<CRenderQueue>();
+	renderQueue.SortRenderItems();
+	std::vector<SRenderInstance> renderItems = renderQueue.GetRenderItems();
+
+	for (const auto& renderItem : renderItems)
+	{
+		const auto batch = renderItem.pBatch;
+
+		vkCmd->BindPipeline(batch->pPipeline);
+		vkCmd->BindVertexBuffer(batch->pVertexBuffer);
+		vkCmd->BindIndexBuffer(batch->pIndexBuffer, EIndexType::INDEX_TYPE_UINT32);
+		vkCmd->BindMaterial(batch->pMaterial, GetCurrentFrameIndex());
+		vkCmd->BindFrameDescriptorSet(m_pFrameDescriptorContext->GetDescriptorSet(GetCurrentFrameIndex()));
+
+		SUniformBufferBlockModel modelData{};
 		modelData.matModel = renderItem.modelMatrix;
-		pCmd->PushConstants(&modelData, sizeof(modelData));
-		pCmd->BindMaterial(renderItem.pMaterial, GetCurrentFrameIndex());
-		pCmd->DrawIndexed(renderItem.indexCount, 1, renderItem.firstIndex);
+		modelData.skinPaletteIndex = renderItem.skinPaletteIndex;
+		modelData.flags = renderItem.flags;
+		vkCmd->PushConstants(&modelData, sizeof(modelData));
+		vkCmd->DrawIndexed(batch->indexCount, 1, batch->firstIndex);
 	}
 
 	m_vRenderItems.clear();
@@ -272,12 +338,12 @@ void CVulkanRenderer::OnResize()
 	RecreateSwapchain();
 }
 
-std::vector<SRenderItem>& CVulkanRenderer::GetRenderItems()
+std::vector<SRenderInstance>& CVulkanRenderer::GetRenderItems()
 {
 	return (m_vRenderItems);
 }
 
-const std::vector<SRenderItem>& CVulkanRenderer::GetRenderItems() const
+const std::vector<SRenderInstance>& CVulkanRenderer::GetRenderItems() const
 {
 	return (m_vRenderItems);
 }
@@ -344,4 +410,121 @@ bool CVulkanRenderer::RecreateSwapchain()
 	}
 
 	return true;
+}
+
+bool CVulkanRenderer::CreateFrameDescriptorContext()
+{
+	auto& renderDev = CServiceLocator::Get<CIRenderDevice>();
+
+	// Initialize Buffers
+	m_vCameraUBO.reserve(MAX_FRAMES_IN_FLIGHT);
+	m_vJointsBuffer.reserve(MAX_FRAMES_IN_FLIGHT);
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		SBufferDesc cameraUBODesc{};
+		cameraUBODesc.m_stName = "Camera Uniform Buffer";
+		cameraUBODesc.m_eType = EBufferType::BUFFER_TYPE_UNIFORM;
+		cameraUBODesc.m_uiSize = sizeof(SUniformBufferBlock);
+		cameraUBODesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
+		cameraUBODesc.cpuWrite = true;
+
+		IBuffer* pCameraBuffer = renderDev.CreateBuffer(cameraUBODesc);
+		if (!pCameraBuffer)
+		{
+			syserr("Failed to Create Camera Buffer");
+			return (false);
+		}
+
+		m_vCameraUBO.push_back(pCameraBuffer);
+
+		uint32_t initialSize = 1 * sizeof(Matrix4);
+
+		SBufferDesc joinsBufferDesc{};
+		joinsBufferDesc.m_stName = "Model Storage Uniform Buffer";
+		joinsBufferDesc.m_eType = EBufferType::BUFFER_TYPE_STORAGE;
+		joinsBufferDesc.m_uiSize = initialSize; // Initialize as 100 Metrices
+		joinsBufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
+		joinsBufferDesc.cpuWrite = true;
+
+		IBuffer* pJoinsBuffer = renderDev.CreateBuffer(joinsBufferDesc);
+		if (!pJoinsBuffer)
+		{
+			syserr("Failed to Create Joints Buffer");
+			return (false);
+		}
+
+		m_vJointsBuffer.push_back(pJoinsBuffer);
+	}
+
+
+	SBindingContextDesc ctxDesc{};
+	ctxDesc.m_uiFrameCount = MAX_FRAMES_IN_FLIGHT;
+	ctxDesc.m_vBindings = CDescriptorSetLayouts::GetFrameBindings();
+
+	ctxDesc.m_vBufferResources.push_back({
+		static_cast<uint32_t>(EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_CAMERA_UBO),
+		m_vCameraUBO
+		});
+
+	ctxDesc.m_vBufferResources.push_back({
+		static_cast<uint32_t>(EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_BONES_SSBO),
+		m_vJointsBuffer
+		});
+
+	m_pFrameDescriptorContext = std::make_unique<CVulkanDescriptorContext>();
+	if (!m_pFrameDescriptorContext->Initialize(ctxDesc))
+	{
+		return (false);
+	}
+
+	return (true);
+}
+
+void CVulkanRenderer::UpdateRendererBuffers()
+{
+	auto& windowMgr = CServiceLocator::Get<CWindowManager>();
+	auto& renderDev = CServiceLocator::Get<CIRenderDevice>();
+	auto& vkRenderDevice = static_cast<CVulkanRenderDevice&>(renderDev);
+
+	static auto startTime = std::chrono::high_resolution_clock::now();
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	SUniformBufferBlock bufferBlock{};
+
+	bufferBlock.matView = windowMgr.GetCamera()->GetViewMatrix();
+
+	bufferBlock.matProjection = windowMgr.GetCamera()->GetProjectionMatrix();
+	bufferBlock.matProjection[1][1] *= -1.0f;
+
+	bufferBlock.matViewProjection = bufferBlock.matProjection * bufferBlock.matView;
+
+	renderDev.UpdateBuffer(m_vCameraUBO[GetCurrentFrameIndex()], &bufferBlock, sizeof(SUniformBufferBlock), 0);
+
+	// Update Joints Buffer
+	std::shared_ptr<CSkeletalActor> pSkeletalActor = std::dynamic_pointer_cast<CSkeletalActor>(m_pActor);
+	std::vector<Matrix4> jointsMertices = pSkeletalActor->GetAnimator()->GetFinalBoneMatrices();
+
+	uint64_t jointsBufferSize = jointsMertices.size() * sizeof(Matrix4);
+	SBufferDesc joinsBufferDesc{};
+	joinsBufferDesc.m_stName = "Model Joints Storage Buffer";
+	joinsBufferDesc.m_eType = EBufferType::BUFFER_TYPE_STORAGE;
+	joinsBufferDesc.m_uiSize = jointsBufferSize; // Initialize as 100 Metrices
+	joinsBufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
+	joinsBufferDesc.cpuWrite = true;
+
+	EBufferResizeResult result = vkRenderDevice.EnsureBufferCapacity(m_vJointsBuffer[GetCurrentFrameIndex()], jointsBufferSize, joinsBufferDesc);
+	if (result == EBufferResizeResult::BUFFER_RESIZE_FAILED)
+	{
+		return;
+	}
+
+	if (result == EBufferResizeResult::BUFFER_RESIZE_RECREATED)
+	{
+		uint32_t bindingPoint = static_cast<uint32_t>(EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_BONES_SSBO);
+		m_pFrameDescriptorContext->UpdateBufferBinding(GetCurrentFrameIndex(), bindingPoint, m_vJointsBuffer[GetCurrentFrameIndex()], 0, jointsBufferSize); // or VK_WHOLE_SIZE
+	}
+
+	renderDev.UpdateBuffer(m_vJointsBuffer[GetCurrentFrameIndex()], jointsMertices.data(), jointsBufferSize, 0);
 }

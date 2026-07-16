@@ -83,5 +83,5 @@ public:
 private:
 	CVulkanPipeline* m_pOwningPipeline = nullptr;
 	std::vector<VkDescriptorSet> m_vkvDescriptorSets = {}; // size = MAX_FRAMES_IN_FLIGHT
-	CVulkanDescriptorContext* m_vkVulkanDescriptorContext = nullptr;
+	CVulkanDescriptorContext* m_pVulkanDescriptorContext = nullptr;
 };

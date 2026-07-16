@@ -4,10 +4,16 @@
 #include "Vulkan/VulkanSwapchain.h"
 #include "Vulkan/VulkanBuffer.h"
 #include "Vulkan/VulkanTexture2D.h"
-#include "VulkanModel/StaticModel.h"
+#include "Vulkan/VulkanMaterial.h"
+#include "Model/StaticModel.h"
+#include "Model/SkeletalModel.h"
+#include "Actor/SkeletalActor.h"
 #include "Window/WindowManager.h"
 #include "Camera/Camera.h"
 #include "Textures/TexturesManager.h"
+#include "Services/AssimpModelImporter.h"
+#include "Services/ActorsManager.h"
+#include "Services/RenderQueue.h"
 
 EGraphicsAPI CVulkanRenderDevice::GetAPI() const
 {
@@ -53,42 +59,22 @@ bool CVulkanRenderDevice::Initialize(GLFWwindow* pPlatformWindowHandle)
 		return (false);
 	}
 
+	// Initialize Before Models
+	CTexturesManager::Instance().Initialize();
+	CPipelinesManager::Instance().Initialize();
+
+	// 15. Initialize Actors Manager
+	CServiceLocator::Get<CActorsManager>().LoadMeshesFromJson(ACTORS_PATH);
+
 	m_pVulkanRenderer = std::make_unique<CVulkanRenderer>();
 	if (!m_pVulkanRenderer->Initialize())
 	{
 		return (false);
 	}
 
-	m_vpUniformBuffer.resize(MAX_FRAMES_IN_FLIGHT);
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		SBufferDesc uniformBufferDesc{};
-		uniformBufferDesc.m_stName = "Camera Uniform Buffer";
-		uniformBufferDesc.m_eType = EBufferType::BUFFER_TYPE_UNIFORM;
-		uniformBufferDesc.m_uiSize = sizeof(SUniformBufferBlock);
-		uniformBufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
-		uniformBufferDesc.cpuWrite = true;
-
-		IBuffer* pBuffer = CreateBuffer(uniformBufferDesc);
-		if (!pBuffer)
-		{
-			return (false);
-		}
-
-		m_vpUniformBuffer[i] = dynamic_cast<CVulkanBuffer*>(pBuffer);
-	}
-
-	// Initialize Before Models
-	CTexturesManager::Instance().Initialize();
-	CPipelinesManager::Instance().Initialize();
 
 	m_pVulkanCommandList = std::make_unique<CVulkanCommandList>();
 	m_pVulkanCommandList->SetRenderer(m_pVulkanRenderer.get());
-
-	m_pStaticModel = AnubisNew(CStaticModel, MEM_TAG_RENDERING);
-	m_pStaticModel->ImportModel("Assets/Models/Female/SK_Shaman_4_1.fbx", m_vpUniformBuffer);
-	m_pStaticModel->UploadToGPU();
 
 	return (true);
 }
@@ -99,21 +85,9 @@ void CVulkanRenderDevice::Shutdown()
 	vkDeviceWaitIdle(m_pVulkanDevice->GetDevice());
 
 	// Start Clearing
-	if (m_pStaticModel)
-	{
-		m_pStaticModel->Clear();
-		AnubisSafeDelete(m_pStaticModel);
-	}
-
+	CServiceLocator::Get<CActorsManager>().Destroy();
 	CPipelinesManager::Instance().Clear();
 	CTexturesManager::Instance().Destroy();
-
-	for (auto& buffer : m_vpUniformBuffer)
-	{
-		DestroyBuffer(buffer);
-		AnubisSafeDelete(buffer);
-		buffer = nullptr;
-	}
 
 	m_pVulkanRenderer->Shutdown();
 	CleanupSwapchain();
@@ -139,6 +113,7 @@ void CVulkanRenderDevice::EndFrame()
 		return;
 	}
 
+
 	m_pVulkanRenderer->EndSwapchainRenderPass(m_vkCurrentCommandBuffer);
 	m_pVulkanRenderer->EndFrame();
 
@@ -147,32 +122,9 @@ void CVulkanRenderDevice::EndFrame()
 
 void CVulkanRenderDevice::Present()
 {
-	UpdateUniformBuffers(GetCurrentFrameIndex());
-	if (m_pStaticModel)
-	{
-		std::vector<SRenderItem> renderItems = m_pStaticModel->BuildRenderItems();
-		m_pVulkanRenderer->SubimtRenderItems(renderItems);
-	}
-
 	ICommandList* cmd = GetCommandList();
-
+	m_pVulkanRenderer->Present();
 	m_pVulkanRenderer->FlushRenderItems(cmd);
-
-	/*
-	if (cmd)
-	{
-		cmd->Begin();
-
-		cmd->BindPipeline(meshPipeline);
-		cmd->BindVertexBuffer(vertexBuffer);
-		cmd->BindIndexBuffer(indexBuffer, EIndexType::INDEX_UINT32);
-		cmd->BindMaterial(material, renderDevice->GetCurrentFrameIndex());
-		cmd->PushConstants(&pushData, sizeof(pushData));
-		cmd->DrawIndexed(indexCount);
-
-		cmd->End();
-	}
-	*/
 }
 
 uint32_t CVulkanRenderDevice::GetCurrentFrameIndex() const
@@ -772,6 +724,61 @@ bool CVulkanRenderDevice::TransitionImageLayout(VkImage image, VkImageLayout old
 	return TransitionImageLayoutInternal(image, oldLayout, newLayout);
 }
 
+EBufferResizeResult CVulkanRenderDevice::EnsureBufferCapacity(IBuffer*& pBuffer, VkDeviceSize requiredSize, const SBufferDesc& templateDesc)
+{
+	if (requiredSize == 0)
+	{
+		requiredSize = sizeof(Matrix4);
+	}
+
+	// Buffer Size Already more
+	if (pBuffer && pBuffer->GetSize() >= requiredSize)
+	{
+		return (EBufferResizeResult::BUFFER_RESIZE_UNCHANGED);
+	}
+
+	VkDeviceSize newSize = requiredSize;
+
+	if (pBuffer)
+	{
+		VkDeviceSize oldSize = pBuffer->GetSize();
+		newSize = std::max(requiredSize, oldSize * 2); // double capacity
+	}
+
+	SBufferDesc newDesc = templateDesc;
+	newDesc.m_uiSize = static_cast<uint32_t>(newSize);
+
+	IBuffer* pNewBufferBase = CreateBuffer(newDesc);
+	if (!pNewBufferBase)
+	{
+		syserr("Failed to create buffer {}", newDesc.m_stName);
+		return EBufferResizeResult::BUFFER_RESIZE_FAILED;
+	}
+
+	CVulkanBuffer* pNewBuffer = dynamic_cast<CVulkanBuffer*>(pNewBufferBase);
+	if (!pNewBuffer)
+	{
+		syserr("Failed to cast new buffer {}", newDesc.m_stName);
+		DestroyBuffer(pNewBufferBase);
+		AnubisSafeDelete(pNewBufferBase);
+		return EBufferResizeResult::BUFFER_RESIZE_FAILED;
+	}
+
+	IBuffer* pOldBuffer = pBuffer;
+	pBuffer = pNewBuffer;
+
+	// Ensure GPU is idle so we don't destroy resources currently in use
+	vkDeviceWaitIdle(GetDevice());
+
+	if (pOldBuffer)
+	{
+		DestroyBuffer(pOldBuffer); // or RetireBuffer(pOldBuffer) if GPU may still use it
+		AnubisSafeDelete(pOldBuffer);
+	}
+
+	return (EBufferResizeResult::BUFFER_RESIZE_RECREATED);
+}
+
 bool CVulkanRenderDevice::UploadBufferInternal(CVulkanBuffer* pBuffer, const void* pData, VkDeviceSize size, VkDeviceSize dstOffset)
 {
 	VkMemoryPropertyFlags memFlags = VulkanUtils::ToVulkanMemoryProperties(pBuffer->GetMemoryType());
@@ -1110,24 +1117,4 @@ bool CVulkanRenderDevice::CopyBufferToImageInternal(VkBuffer srcBuffer, VkImage 
 	}
 
 	return (true);
-}
-
-void CVulkanRenderDevice::UpdateUniformBuffers(uint32_t currFrame)
-{
-	auto& windowMgr = CServiceLocator::Get<CWindowManager>();
-
-	static auto startTime = std::chrono::high_resolution_clock::now();
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-	SUniformBufferBlock bufferBlock{};
-
-	bufferBlock.matView = windowMgr.GetCamera()->GetViewMatrix();
-
-	bufferBlock.matProjection = windowMgr.GetCamera()->GetProjectionMatrix();
-	bufferBlock.matProjection[1][1] *= -1.0f;
-
-	bufferBlock.matViewProjection = bufferBlock.matProjection * bufferBlock.matView;
-
-	UpdateBuffer(m_vpUniformBuffer[currFrame], &bufferBlock, sizeof(SUniformBufferBlock), 0);
 }

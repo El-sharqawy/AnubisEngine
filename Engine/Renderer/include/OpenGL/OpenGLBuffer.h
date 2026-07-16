@@ -19,9 +19,9 @@ public:
     void UpdateBufferData(const SBufferDesc& bufferDesc, uint32_t uiBufferID);
 
     // OpenGL Only Data
-    EBufferBindingPoints GetBindingPoint() const { return (m_eBindingPoint); }
+    EBufferBindingPointsSetOne GetBindingPoint() const { return (m_eBindingPoint); }
     uint32_t GetBufferID() const { return (m_uiBufferID); }
-    void SetBindingPoint(EBufferBindingPoints eBindingPt);
+    void SetBindingPoint(EBufferBindingPointsSetOne eBindingPt);
     bool IsBoundToBase() const;
     void UpdateBufferID(uint32_t uiNewBufferID);
     void UpdateBufferSize(uint64_t uiNewBufferSize);
@@ -34,6 +34,6 @@ public:
     bool IsValid() const override { return (m_bIsValid); }
 
 private:
-    EBufferBindingPoints m_eBindingPoint; // only meaningful for UBO/SSBO, UINT32_MAX = not bound to any base
+    EBufferBindingPointsSetOne m_eBindingPoint = EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MAX; // only meaningful for UBO/SSBO, UINT32_MAX = not bound to any base
     uint32_t m_uiBufferID = 0;
 };

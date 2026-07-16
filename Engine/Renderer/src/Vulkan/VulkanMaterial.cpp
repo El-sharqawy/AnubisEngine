@@ -1,23 +1,24 @@
 #include "Vulkan/VulkanMaterial.h"
 #include "Device/VulkanRenderDevice.h"
+#include "Vulkan/VulkanDescriptorContext.h"
 
 bool CVulkanMaterial::InitializeMaterial(const SBindingContextDesc& ctxDesc)
 {
-	m_vkVulkanDescriptorContext = AnubisNew(CVulkanDescriptorContext, MEM_TAG_RENDERING);
-	if (!m_vkVulkanDescriptorContext->Initialize(ctxDesc))
+	m_pVulkanDescriptorContext = AnubisNew(CVulkanDescriptorContext, MEM_TAG_RENDERING);
+	if (!m_pVulkanDescriptorContext->Initialize(ctxDesc))
 	{
 		syserr("Failed to Initialize Vulkan Descriptor Context for Material {}", GetMaterialName());
-		delete m_vkVulkanDescriptorContext;
+		delete m_pVulkanDescriptorContext;
 		return (false);
 	}
 
-	m_vkvDescriptorSets = m_vkVulkanDescriptorContext->GetDescriptorSets();
+	m_vkvDescriptorSets = m_pVulkanDescriptorContext->GetDescriptorSets();
 	return (true);
 }
 
 IBindingContext* CVulkanMaterial::GetDescriptorContext() const
 {
-	return (m_vkVulkanDescriptorContext);
+	return (m_pVulkanDescriptorContext);
 }
 
 void CVulkanMaterial::ClearMaterial()
@@ -59,8 +60,11 @@ void CVulkanMaterial::ClearMaterial()
 		AnubisSafeDelete(m_sPbr.m_pNormalMap);
 	}
 
-	m_vkVulkanDescriptorContext->Destroy();
-	AnubisSafeDelete(m_vkVulkanDescriptorContext);
+	if (m_pVulkanDescriptorContext)
+	{
+		m_pVulkanDescriptorContext->Destroy();
+		AnubisSafeDelete(m_pVulkanDescriptorContext);
+	}
 
 	m_vkvDescriptorSets.clear();
 }
@@ -262,7 +266,7 @@ VkDescriptorSet CVulkanMaterial::GetDescriptorSet(size_t index) const
 
 CVulkanDescriptorContext* CVulkanMaterial::GetDescriptorContext()
 {
-	return (m_vkVulkanDescriptorContext);
+	return (m_pVulkanDescriptorContext);
 }
 
 void CVulkanMaterial::SetOwningPipeline(CVulkanPipeline* pPipeline)

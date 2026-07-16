@@ -57,8 +57,3 @@ namespace VulkanUtils
     // Shaders
     VkShaderStageFlagBits ToVkShaderInfo(EShaderStage shaderType);
 }
-
-struct SPushConstantModel
-{
-    Matrix4 matModel;
-};

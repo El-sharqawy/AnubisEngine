@@ -120,7 +120,7 @@ bool CVulkanPipeline::CreatePipelineLayout(const SVulkanContext& context, const 
 	VkPushConstantRange pushConstantRange{};
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(SPushConstantModel);
+	pushConstantRange.size = sizeof(SUniformBufferBlockModel);
 
 	VkPipelineLayoutCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

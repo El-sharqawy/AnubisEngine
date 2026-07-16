@@ -10,6 +10,11 @@
 #include "OpenGL/OpenGLShader.h"
 #include "OpenGL/OpenGLUtils.h"
 #include "Camera/Camera.h"
+#include "API/ActorData.h"
+#include "Model/StaticModel.h"
+#include "Model/SkeletalModel.h"
+#include "Services/AssimpModelImporter.h"
+#include "Services/ActorsManager.h"
 
 #define ENABLE_DEBUG_LOGS
 
@@ -37,48 +42,27 @@ bool COpenGLRenderDevice::Initialize(GLFWwindow* pPlatformWindowHandle)
 	SetupDebugOutput();
 #endif
 
-	SBufferDesc cameraUniformBufferDesc{};
-	cameraUniformBufferDesc.m_stName = "Camera Uniform Buffer";
-	cameraUniformBufferDesc.m_eType = EBufferType::BUFFER_TYPE_UNIFORM;
-	cameraUniformBufferDesc.m_uiSize = sizeof(SUniformBufferBlock);
-	cameraUniformBufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
-	cameraUniformBufferDesc.m_eBindingPoint = EBufferBindingPoints::BINDING_POINT_CAMERA_UBO_FIRST;
-	cameraUniformBufferDesc.cpuWrite = true;
-
-	m_pCameraUBO = CreateBuffer(cameraUniformBufferDesc);
-	if (!m_pCameraUBO)
-	{
-		return (false);
-	}
-
-	m_pOpenGLCommandList = std::make_unique<COpenGLCommandList>();
-	m_pOpenGLRenderer = std::make_unique<COpenGLRenderer>();
-
 	CTexturesManager::Instance().Initialize();
 	CPipelinesManager::Instance().Initialize();
 
-	m_pStaticModel = AnubisNew(CStaticModel, MEM_TAG_RENDERING);
-	m_pStaticModel->ImportModel("Assets/Models/Female/SK_Shaman_4_1.fbx", { m_pCameraUBO });
-	m_pStaticModel->UploadToGPU();
+	// Initialize Actors Manager
+	CServiceLocator::Get<CActorsManager>().LoadMeshesFromJson(ACTORS_PATH);
+
+	m_pOpenGLCommandList = std::make_unique<COpenGLCommandList>();
+	m_pOpenGLRenderer = std::make_unique<COpenGLRenderer>();
+	if (!m_pOpenGLRenderer->Initialize())
+	{
+		return (false);
+	}
 
 	return (true);
 }
 
 void COpenGLRenderDevice::Shutdown()
 {
+	CServiceLocator::Get<CActorsManager>().Destroy();
 	CPipelinesManager::Instance().Clear();
 	CTexturesManager::Instance().Destroy();
-
-	if (m_pStaticModel)
-	{
-		m_pStaticModel->Clear();
-		AnubisSafeDelete(m_pStaticModel);
-		m_pStaticModel = nullptr;
-	}
-
-	DestroyBuffer(m_pCameraUBO);
-	AnubisSafeDelete(m_pCameraUBO);
-	m_pCameraUBO = nullptr;
 
 	gladLoaderUnloadGL();
 }
@@ -88,12 +72,13 @@ void COpenGLRenderDevice::BeginFrame()
 	auto& windowMgr = CServiceLocator::Get<CWindowManager>();
 	windowMgr.HandleOsInput();
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_pOpenGLRenderer->BeginFrame();
 }
 
 void COpenGLRenderDevice::EndFrame()
 {
+	m_pOpenGLRenderer->EndFrame();
+
 	auto& windowMgr = CServiceLocator::Get<CWindowManager>();
 	windowMgr.SwapBuffers();
 }
@@ -101,24 +86,15 @@ void COpenGLRenderDevice::EndFrame()
 void COpenGLRenderDevice::Present()
 {
 	// Render Stuff
-	UpdateUniformBuffers(m_uiCurrentFrame);
-
-	if (m_pStaticModel)
-	{
-		std::vector<SRenderItem> renderItems = m_pStaticModel->BuildRenderItems();
-		m_pOpenGLRenderer->SubimtRenderItems(renderItems);
-	}
+	m_pOpenGLRenderer->Present();
 
 	ICommandList* cmd = GetCommandList();
-
 	m_pOpenGLRenderer->FlushRenderItems(cmd);
-
-	m_uiCurrentFrame = (m_uiCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 uint32_t COpenGLRenderDevice::GetCurrentFrameIndex() const
 {
-	return (m_uiCurrentFrame);
+	return (m_pOpenGLRenderer->GetCurrentFrameIndex());
 }
 
 IBuffer* COpenGLRenderDevice::CreateBuffer(const SBufferDesc& bufferDesc, const void* initialData)
@@ -775,6 +751,7 @@ ICommandList* COpenGLRenderDevice::GetCommandList()
 void COpenGLRenderDevice::Resize(int32_t width, int32_t height)
 {
 	glViewport(0, 0, width, height);
+	glScissor(0, 0, width, height);
 }
 
 bool COpenGLRenderDevice::CreateGLContext(GLFWwindow* pPlatformWindowHandle)
@@ -803,11 +780,7 @@ bool COpenGLRenderDevice::LoadExtensions()
 
 	// Match Vulkan matrix, depth [0 .. 1]
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glDepthMask(GL_TRUE);
-	glDisable(GL_CULL_FACE);
+	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	return (true);
 }
@@ -840,27 +813,3 @@ void APIENTRY COpenGLRenderDevice::MyDebugCallback(GLenum source, GLenum type, G
 
 	syslog("{}", message);
 }
-
-void COpenGLRenderDevice::UpdateUniformBuffers(uint32_t currFrame)
-{
-	auto& windowMgr = CServiceLocator::Get<CWindowManager>();
-
-	static auto startTime = std::chrono::high_resolution_clock::now();
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-	SUniformBufferBlock bufferBlock{};
-
-	bufferBlock.matView = windowMgr.GetCamera()->GetViewMatrix();
-
-	bufferBlock.matProjection = windowMgr.GetCamera()->GetProjectionMatrix();
-	// bufferBlock.matProjection[1][1] *= -1.0f;
-
-	bufferBlock.matViewProjection = bufferBlock.matProjection * bufferBlock.matView;
-
-	SUniformBufferBlockModel bufferModelBlock{};
-	bufferModelBlock.matModel = Matrix4(1.0f);
-
-	UpdateBuffer(m_pCameraUBO, &bufferBlock, sizeof(SUniformBufferBlock), 0);
-}
-

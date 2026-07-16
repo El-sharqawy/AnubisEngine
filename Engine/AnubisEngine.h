@@ -10,6 +10,10 @@
 #include "Events/EventBus.h"
 #include "Textures/TexturesManager.h"
 #include "Device/PipelinesManager.h"
+#include "Services/ActorsManager.h"
+#include "Services/AnimationsManager.h"
+#include "Services/AssimpModelImporter.h"
+#include "Services/RenderQueue.h"
 
 #define AnubisInstance(T)				CServiceLocator::Instance().Get<T>()
 #define AnubisInstancePtr(T)			CServiceLocator::Instance().GetPtr<T>()
@@ -64,6 +68,10 @@ protected:
 	CWindowManager window_manager;
 	CTexturesManager textures_mgr;
 	CPipelinesManager pipelines_manager;
+	CAssimpModelImporter assimp_model_importer;
+	CActorsManager actors_manager;
+	CAnimationsManager animations_manager;
+	CRenderQueue render_queue;
 
 private:
 	bool m_bIsRunning = true;

@@ -24,6 +24,7 @@ public:
     void BindVertexBuffer(IBuffer* buffer, uint64_t offset = 0) override;
     void BindIndexBuffer(IBuffer* buffer, EIndexType type, uint64_t offset = 0) override;
     void BindMaterial(IMaterial* material, uint32_t frameIndex) override;
+    void BindFrameDescriptorSet(VkDescriptorSet set);
     void PushConstants(const void* data, uint32_t size, uint32_t offset = 0) override;
 
     void DrawIndexed(uint32_t indexCount,

@@ -7,7 +7,8 @@
 #include "Vulkan/VulkanPipeline.h"
 #include "Vulkan/VulkanRenderer.h"
 #include "Vulkan/VulkanCommandList.h"
-#include "VulkanModel/StaticModel.h"
+
+class CActor;
 
 struct SVulkanContext
 {
@@ -67,7 +68,7 @@ public:
     bool UpdateBufferWithStaging(IBuffer* pBuffer, const void* pData, size_t size, size_t dstOffset = 0);
     bool RecreateSwapchain();
     bool TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
-    void UpdateUniformBuffers(uint32_t currFrame);
+    EBufferResizeResult EnsureBufferCapacity(IBuffer*& pBuffer, VkDeviceSize requiredSize, const SBufferDesc& templateDesc);
 
 protected:
 	bool CreateInstance();
@@ -97,8 +98,4 @@ private:
     // GLFWwindow
     GLFWwindow* m_pGLFWwindow = nullptr;
     SVulkanContext m_gContext = {};
-
-    // Camera Matrix
-    std::vector<IBuffer*> m_vpUniformBuffer = {};
-    CStaticModel* m_pStaticModel = nullptr;
 };

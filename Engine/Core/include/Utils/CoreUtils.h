@@ -4,6 +4,8 @@
 #include <utility>
 #include <assimp/types.h>
 #include "API/ShaderProgram.h"
+#include "TypeMatrix4.h"
+#include <assimp/scene.h>			// Output data structure
 
 namespace Anubis
 {
@@ -112,4 +114,7 @@ namespace Anubis
 
     std::string GetShaderStageStr(EShaderStage stage);
     std::string ResolveShaderPath(EGraphicsAPI api, const std::string& baseName, EShaderStage stage);
+    Matrix4 AssimpToMatrix4(const aiMatrix3x3& AssimpMatrix);
+    Matrix4 AssimpToMatrix4(const aiMatrix4x4& AssimpMatrix);
+    void PrintMatrix4(const Matrix4& Matrix);
 }

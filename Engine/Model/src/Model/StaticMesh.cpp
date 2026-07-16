@@ -1,16 +1,16 @@
-#include "VulkanModel/StaticMesh.h"
+#include "Model/StaticMesh.h"
 #include "EngineMathVectors.h"
 
 CStaticMesh::CStaticMesh(CStaticMesh&& other) noexcept
-    : m_sName(std::move(other.m_sName))
-    , m_uiBaseVertex(std::exchange(other.m_uiBaseVertex, 0))
-    , m_uiBaseIndex(std::exchange(other.m_uiBaseIndex, 0))
-    , m_uiIndexCount(std::exchange(other.m_uiIndexCount, 0))
-    , m_uiVertexCount(std::exchange(other.m_uiVertexCount, 0))
-    , m_uiMaterialIdx(std::exchange(other.m_uiMaterialIdx, 0))
-    , m_localBounds(std::move(other.m_localBounds))
-    , m_bIsValid(std::exchange(other.m_bIsValid, false))
 {
+    m_sName = std::move(other.m_sName);
+    m_uiBaseVertex = std::exchange(other.m_uiBaseVertex, 0);
+    m_uiBaseIndex = std::exchange(other.m_uiBaseIndex, 0);
+    m_uiIndexCount = std::exchange(other.m_uiIndexCount, 0);
+    m_uiVertexCount = std::exchange(other.m_uiVertexCount, 0);
+    m_uiMaterialIdx = std::exchange(other.m_uiMaterialIdx, 0);
+    m_localBounds = std::move(other.m_localBounds);
+    m_bIsValid = std::exchange(other.m_bIsValid, false);
 }
 
 CStaticMesh& CStaticMesh::operator=(CStaticMesh&& other) noexcept
@@ -107,6 +107,8 @@ bool CStaticMesh::LoadMesh(const aiMesh* pAiMesh, uint32_t uiMaterialIndex)
         m_vIndices.emplace_back(face.mIndices[2]);
     }
 
+    ComputeBounds(m_vVertices);
+
     m_uiBaseIndex = 0;
     m_uiBaseVertex = 0;
 
@@ -133,3 +135,45 @@ void CStaticMesh::Unload()
     m_bIsValid = false;
 }
 
+void CStaticMesh::ComputeBounds(const std::vector<SStaticMeshVertex>& vVertices)
+{
+    if (vVertices.empty())
+    {
+        return;
+    }
+
+    // 1. Compute AABB
+    SVector3Df min = vVertices[0].position;
+    SVector3Df max = vVertices[0].position;
+
+    for (size_t i = 1; i < vVertices.size(); ++i)
+    {
+        const SVector3Df& pos = vVertices[i].position;
+
+        min.x = std::fmin(min.x, pos.x);
+        min.y = std::fmin(min.y, pos.y);
+        min.z = std::fmin(min.z, pos.z);
+
+        max.x = std::fmax(max.x, pos.x);
+        max.y = std::fmax(max.y, pos.y);
+        max.z = std::fmax(max.z, pos.z);
+    }
+
+    m_localBounds.v3Min = min;
+    m_localBounds.v3Max = max;
+
+    // 2. Compute bounding sphere (center = AABB center, radius = max distance)
+    SVector3Df center = (min + max) * 0.5f;
+    float maxRadius = 0.0f; // Changed name to reflect actual distance
+
+    for (auto& vertex : vVertices)
+    {
+        SVector3Df pos = SVector3Df(vertex.position.x, vertex.position.y, vertex.position.z);
+        float dist = pos.distance(center);
+        maxRadius = std::fmax(maxRadius, dist); // Storing actual max distance
+    }
+
+    // Later Apply Sphere
+    m_boundingSphere.v3Center = center;
+    m_boundingSphere.fRadius = maxRadius;
+}

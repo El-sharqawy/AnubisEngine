@@ -1,5 +1,6 @@
 #include "Stdafx.h"
 #include "Utils/CoreUtils.h"
+#include "Logging/LogManager.h"
 
 /**
  * @brief Extracts the file name from a full file path using modern C++ techniques.
@@ -129,4 +130,50 @@ std::string Anubis::ResolveShaderPath(EGraphicsAPI api, const std::string& baseN
         return "shaders/vulkan/" + baseName + "_" + ext + ".spv";
     }
     return "shaders/opengl/" + baseName + "." + ext;
+}
+
+Matrix4 Anubis::AssimpToMatrix4(const aiMatrix3x3& AssimpMatrix)
+{
+    Matrix4 mat{};
+    mat[0][0] = AssimpMatrix.a1; mat[0][1] = AssimpMatrix.b1; mat[0][2] = AssimpMatrix.c1; mat[0][3] = 0.0f;
+    mat[1][0] = AssimpMatrix.a2; mat[1][1] = AssimpMatrix.b2; mat[1][2] = AssimpMatrix.c2; mat[1][3] = 0.0f;
+    mat[2][0] = AssimpMatrix.a3; mat[2][1] = AssimpMatrix.b3; mat[2][2] = AssimpMatrix.c3; mat[2][3] = 0.0f;
+    mat[3][0] = 0.0f; mat[3][1] = 0.0f; mat[3][2] = 0.0f; mat[3][3] = 1.0f;
+    return (mat);
+}
+
+Matrix4 Anubis::AssimpToMatrix4(const aiMatrix4x4& AssimpMatrix)
+{
+    // Assimp: row-major
+    // Engine: column-major with operator[][] = [column][row]
+
+    Matrix4 mat{};
+    mat[0][0] = AssimpMatrix.a1;
+    mat[0][1] = AssimpMatrix.b1;
+    mat[0][2] = AssimpMatrix.c1;
+    mat[0][3] = AssimpMatrix.d1;
+
+    mat[1][0] = AssimpMatrix.a2;
+    mat[1][1] = AssimpMatrix.b2;
+    mat[1][2] = AssimpMatrix.c2;
+    mat[1][3] = AssimpMatrix.d2;
+
+    mat[2][0] = AssimpMatrix.a3;
+    mat[2][1] = AssimpMatrix.b3;
+    mat[2][2] = AssimpMatrix.c3;
+    mat[2][3] = AssimpMatrix.d3;
+
+    mat[3][0] = AssimpMatrix.a4;
+    mat[3][1] = AssimpMatrix.b4;
+    mat[3][2] = AssimpMatrix.c4;
+    mat[3][3] = AssimpMatrix.d4;
+    return (mat);
+}
+
+void Anubis::PrintMatrix4(const Matrix4& Matrix)
+{
+    syslog("[{}, {}, {}, {}]", Matrix[0][0], Matrix[0][1], Matrix[0][2], Matrix[0][3]);
+    syslog("[{}, {}, {}, {}]", Matrix[1][0], Matrix[1][1], Matrix[1][2], Matrix[1][3]);
+    syslog("[{}, {}, {}, {}]", Matrix[2][0], Matrix[2][1], Matrix[2][2], Matrix[2][3]);
+    syslog("[{}, {}, {}, {}]", Matrix[3][0], Matrix[3][1], Matrix[3][2], Matrix[3][3]);
 }

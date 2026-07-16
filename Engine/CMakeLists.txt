@@ -56,7 +56,9 @@ target_link_libraries(Engine
     PUBLIC
         Math
         Core
+        Model
         Renderer
+        Scene
 
         # Extern Libraries
         glad
@@ -65,7 +67,9 @@ target_link_libraries(Engine
 
 add_subdirectory(Math)
 add_subdirectory(Core)
+add_subdirectory(Model)
 add_subdirectory(Renderer)
+add_subdirectory(Scene)
 
 if (WIN32)
 target_link_libraries(Engine PRIVATE 

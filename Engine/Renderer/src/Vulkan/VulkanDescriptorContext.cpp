@@ -38,6 +38,7 @@ bool CVulkanDescriptorContext::Initialize(const SBindingContextDesc& desc)
 		vkBinding.stageFlags = VK_SHADER_STAGE_ALL; // better: convert engine stage flags
 		vkBinding.pImmutableSamplers = nullptr;
 		vkBindings.push_back(vkBinding);
+		m_mBindingTypes[binding.m_uiBinding] = binding.m_eType;
 	}
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -131,13 +132,15 @@ bool CVulkanDescriptorContext::Initialize(const SBindingContextDesc& desc)
 			bufferInfo.offset = 0;
 			bufferInfo.range = vkBuffer->GetSize();
 
+			VkDescriptorType type = VulkanUtils::ToVkDescriptorType(m_mBindingTypes[bufferRes.m_uiBinding]);
+
 			VkWriteDescriptorSet& write = writes.emplace_back();
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write.dstSet = m_vkvDescriptorSets[frameIndex];
 			write.dstBinding = bufferRes.m_uiBinding;
 			write.dstArrayElement = 0;
 			write.descriptorCount = 1;
-			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // better: derive from binding table
+			write.descriptorType = type; // better: derive from binding table
 			write.pBufferInfo = &bufferInfo;
 		}
 
@@ -158,13 +161,15 @@ bool CVulkanDescriptorContext::Initialize(const SBindingContextDesc& desc)
 			imageInfo.imageView = vkTexture->GetImageView();
 			imageInfo.sampler = vkTexture->GetSampler();
 
+			VkDescriptorType type = VulkanUtils::ToVkDescriptorType(m_mBindingTypes[imageRes.m_uiBinding]);
+
 			VkWriteDescriptorSet& write = writes.emplace_back();
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write.dstSet = m_vkvDescriptorSets[frameIndex];
 			write.dstBinding = imageRes.m_uiBinding;
 			write.dstArrayElement = 0;
 			write.descriptorCount = 1;
-			write.descriptorType = VulkanUtils::ToVkDescriptorType(imageRes.m_eBindingType); // better: derive from binding table
+			write.descriptorType = type; // better: derive from binding table
 			write.pImageInfo = &imageInfo;
 		}
 
@@ -201,6 +206,8 @@ void CVulkanDescriptorContext::Destroy()
 		vkDestroyDescriptorPool(context.device, m_vkDescriptorPool, nullptr);
 		m_vkDescriptorPool = VK_NULL_HANDLE;
 	}
+
+	m_mBindingTypes.clear();
 }
 
 VkDescriptorSetLayout CVulkanDescriptorContext::CreateLayoutFromBindings(VkDevice device, const std::vector<SBindingDesc>& bindings)
@@ -245,4 +252,56 @@ const std::vector<VkDescriptorSet>& CVulkanDescriptorContext::GetDescriptorSets(
 VkDescriptorSetLayout CVulkanDescriptorContext::GetDescriptorSetLayout() const
 {
 	return (m_vkDescriptorSetLayout);
+}
+
+bool CVulkanDescriptorContext::UpdateBufferBinding(
+	uint32_t frameIndex,
+	uint32_t binding,
+	IBuffer* pBuffer,
+	VkDeviceSize offset,
+	VkDeviceSize range)
+{
+	if (!pBuffer)
+	{
+		return false;
+	}
+
+	if (frameIndex >= m_vkvDescriptorSets.size())
+	{
+		return false;
+	}
+
+	auto it = m_mBindingTypes.find(binding);
+	if (it == m_mBindingTypes.end())
+	{
+		return false;
+	}
+
+	auto& renderDev = CServiceLocator::Get<CIRenderDevice>();
+	auto& vkRenderDevice = static_cast<CVulkanRenderDevice&>(renderDev);
+	VkDevice device = vkRenderDevice.GetContext().device;
+
+	CVulkanBuffer* vkBuffer = dynamic_cast<CVulkanBuffer*>(pBuffer);
+
+	if (!vkBuffer)
+	{
+		return false;
+	}
+
+	VkDescriptorBufferInfo bufferInfo{};
+	bufferInfo.buffer = vkBuffer->GetBuffer();
+	bufferInfo.offset = offset;
+	bufferInfo.range = range;
+
+	VkWriteDescriptorSet write{};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.dstSet = m_vkvDescriptorSets[frameIndex];
+	write.dstBinding = binding;
+	write.dstArrayElement = 0;
+	write.descriptorCount = 1;
+	write.descriptorType = VulkanUtils::ToVkDescriptorType(it->second);
+	write.pBufferInfo = &bufferInfo;
+
+	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+	return true;
 }

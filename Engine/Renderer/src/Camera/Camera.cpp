@@ -1,4 +1,5 @@
 #include "Camera/Camera.h"
+#include "Logging/LogManager.h"
 #include "EngineMath.h"
 #include "EngineMathVectors.h"
 #include "EngineMathMatrix.h"
@@ -8,7 +9,7 @@
 
 CCamera::CCamera()
 {
-	m_v3Position = Vector3D(0.0f, 0.0f, 0.0f);
+	m_v3Position = Vector3D(-300.0f, 100.0f, 230.0f);
 	m_v3Front = Vector3D(0.0f, 0.0f, -1.0f);
 
 	m_v3WorldRight = Vector3D(1.0f, 0.0f, 0.0f);

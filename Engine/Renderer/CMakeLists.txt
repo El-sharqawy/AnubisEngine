@@ -14,7 +14,7 @@ else()
 endif()
 
 # Set all sources recursively
-set(Core_Sources
+set(Renderer_Sources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera/Camera.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Device/OpenGLRenderDevice.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Device/PipelinesManager.cpp
@@ -33,6 +33,7 @@ set(Core_Sources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanBuffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanCommandList.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanDescriptorContext.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanDescriptorSet.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanDevice.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanMaterial.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanPipeline.cpp
@@ -42,12 +43,9 @@ set(Core_Sources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanSyncObject.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanTexture2D.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan/VulkanUtils.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanModel/StaticMesh.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanModel/StaticMeshData.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanModel/StaticModel.cpp
 )
 
-set(Core_Headers
+set(Renderer_Headers
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Camera/Camera.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Device/OpenGLRenderDevice.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Device/PipelinesManager.h
@@ -66,6 +64,7 @@ set(Core_Headers
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanBuffer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanCommandList.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanDescriptorContext.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanDescriptorSet.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanDevice.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanMaterial.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanPipeline.h
@@ -75,25 +74,19 @@ set(Core_Headers
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanSyncObject.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanTexture2D.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Vulkan/VulkanUtils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/VulkanModel/SkeletalMeshData.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/VulkanModel/Skeleton.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/VulkanModel/StaticMesh.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/VulkanModel/StaticMeshData.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/VulkanModel/StaticModel.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/VulkanModel/TextureData.h
 )
 
 add_library(Renderer STATIC)
 
 target_sources(Renderer
 	PRIVATE
-		${Core_Sources}
+		${Renderer_Sources}
 
 	PUBLIC
 	FILE_SET HEADERS
 	BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} # Use absolute path for safety
 	FILES
-		${Core_Headers}
+		${Renderer_Headers}
 )
 
 # This ensures that library knows where its own headers are during its own compilation

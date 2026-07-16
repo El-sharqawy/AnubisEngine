@@ -34,4 +34,7 @@ struct SUniformBufferBlock
 struct SUniformBufferBlockModel
 {
     Matrix4 matModel;
+    uint32_t skinPaletteIndex;
+    uint32_t flags = 0;
+    uint32_t padding[2];               // 6468 to 6479 (12 bytes) - Perfect 16-byte alignment
 };
