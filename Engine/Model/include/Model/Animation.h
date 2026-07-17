@@ -35,7 +35,10 @@ public:
     CAnimation() = default;
     ~CAnimation() = default;
 
-    CAnimation(const std::string& stAnimationFile, std::shared_ptr<CSkeleton> pAnimationSkeleton);
+    // Returns false on failure — caller decides what to do (skip, log, fallback)
+    bool LoadFromFile(const std::string& stAnimationFile, std::shared_ptr<CSkeleton> pAnimationSkeleton);
+    bool IsValid() const { return m_bValid; }
+
     CBone* FindBone(const std::string& name);
 
     float GetTicksPerSecond() const { return m_iTicksPerSecond; }
@@ -58,12 +61,14 @@ protected:
 private:
     float m_fDuration = 0.0f;
     int32_t m_iTicksPerSecond = 0;
-    std::vector<CBone> m_vBones;
-    SAssimpNodeData m_sRootNode;
-    std::map<std::string, SBoneInfo> m_mBoneInfoMap;
-    std::unordered_map<std::string, int32_t> m_mBoneTrackIndex;
+    std::vector<CBone> m_vBones = {};
+    SAssimpNodeData m_sRootNode = {};
+    std::map<std::string, SBoneInfo> m_mBoneInfoMap = {};
+    std::unordered_map<std::string, int32_t> m_mBoneTrackIndex = {};
 
     // Animation Data
-    EAnimationMode m_eAnimationMode;
-    EAnimationsTypes m_eAnimationType;
+    EAnimationMode m_eAnimationMode = EAnimationMode::ANIMATION_MODE_GENERAL;
+    EAnimationsTypes m_eAnimationType = EAnimationsTypes::ANIMATION_WAIT;
+
+    bool m_bValid = false;
 };

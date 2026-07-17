@@ -62,11 +62,6 @@ void CAnimator::UpdateAnimation(float deltaTime)
 
         Matrix4 rootTransform = Matrix4(1.0f);
 
-        if (m_bBlending)
-        {
-            rootTransform = EngineMath::Rotate(rootTransform, 180.0f, Vector3D(1, 0, 0)); // Remove it and the char will flip 90 degrees during blending
-        }
-
         if (!m_vRuntimeNodes.empty())
         {
             CalculateBlendedBoneTransformCached(0, rootTransform, alpha);

@@ -95,7 +95,13 @@ bool CAnimationsManager::LoadAnimation(const std::string& stAnimationID)
 		return false;
 	}
 
-	info.pAnimation = std::make_shared<CAnimation>(info.stFilePath, pActorSkeletal->GetSkeletalModel()->GetSkeleton());
+	info.pAnimation = std::make_shared<CAnimation>();
+	if (info.pAnimation->LoadFromFile(info.stFilePath, pActorSkeletal->GetSkeletalModel()->GetSkeleton()) == false)
+	{
+		syserr("Failed to Load Animation {}", info.stFilePath);
+		return (false);
+	}
+
 	info.eLoadState = info.pAnimation ? ELoadState::LOAD_STATE_LOADED : ELoadState::LOAD_STATE_FAILED;
 
 	info.pAnimation->SetAnimationMode(info.eAnimationMode);

@@ -58,43 +58,64 @@ void CBone::Update(float animationTime)
 /* Gets the current index on mKeyPositions to interpolate to based on the current animation time*/
 int32_t CBone::GetPositionIndex(float animationTime) const
 {
+	// Handle loop-back / scrub
+	if (animationTime < m_vPositions[m_iLastPositionIndex].timeStamp)
+	{
+		m_iLastPositionIndex = 0;
+	}
+
 	for (int32_t index = 0; index < m_iNumPositions - 1; index++)
 	{
 		if (animationTime < m_vPositions[index + 1].timeStamp)
 		{
+			m_iLastPositionIndex = index;
 			return index;
 		}
 	}
 
-	return (0);
+	return (m_iNumPositions - 1 > 0) ? m_iNumPositions - 2 : 0;
 }
 
 /* Gets the current index on mKeyRotations to interpolate to based on the current animation time*/
 int32_t CBone::GetRotationIndex(float animationTime) const
 {
+	// Handle loop-back / scrub
+	if (animationTime < m_vRotations[m_iLastRotationIndex].timeStamp)
+	{
+		m_iLastRotationIndex = 0;
+	}
+
 	for (int32_t index = 0; index < m_iNumRotations - 1; index++)
 	{
 		if (animationTime < m_vRotations[index + 1].timeStamp)
 		{
+			m_iLastRotationIndex = index;
 			return index;
 		}
 	}
 
-	return (0);
+	return (m_iNumRotations - 1 > 0) ? m_iNumRotations - 2 : 0;
 }
 
 /* Gets the current index on mKeyScalings to interpolate to based on the current animation time */
 int32_t CBone::GetScaleIndex(float animationTime) const
 {
+	// Handle loop-back / scrub
+	if (animationTime < m_vScales[m_iLastScaleIndex].timeStamp)
+	{
+		m_iLastScaleIndex = 0;
+	}
+
 	for (int32_t index = 0; index < m_iNumScalings - 1; index++)
 	{
 		if (animationTime < m_vScales[index + 1].timeStamp)
 		{
+			m_iLastScaleIndex = index;
 			return index;
 		}
 	}
 
-	return (0);
+	return (m_iNumScalings - 1 > 0) ? m_iNumScalings - 2 : 0;
 }
 
 /* Gets normalized value for Lerp & Slerp*/

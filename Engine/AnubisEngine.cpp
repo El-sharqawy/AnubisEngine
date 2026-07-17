@@ -3,6 +3,8 @@
 #include "Events/Events.hpp"
 #include "Device/VulkanRenderDevice.h"
 #include "Device/OpenGLRenderDevice.h"
+#include "API/ActorData.h"
+#include "Actor/SkeletalActor.h"
 
 bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 {
@@ -130,8 +132,30 @@ void CAnubisEngine::ProcessInput(float deltaTime)
 
 	if (input.IsKeyDown(EInputKey::KEY_ESCAPE))
 	{
+		syslog("Attemp to Shutdown the Engine...");
 		RequestShutdown();
 	}
+
+	auto& assimpImporter = CServiceLocator::Get<CAssimpModelImporter>();
+	auto& actorsMgr = CServiceLocator::Get<CActorsManager>();
+	const SActorInfo pInfo = actorsMgr.GetActorInfo("Warrior_Male");
+	std::shared_ptr<CActor> pActor = pInfo.pActor;
+
+	std::shared_ptr<CSkeletalActor> pSkeletalActor = std::dynamic_pointer_cast<CSkeletalActor>(pActor);
+
+	if (input.IsKeyPressed(EInputKey::KEY_1))
+	{
+		pSkeletalActor->GetAnimator()->PlayAnimation("WarriorMale/OnehandSword/Idle", true);
+	}
+	if (input.IsKeyPressed(EInputKey::KEY_2))
+	{
+		pSkeletalActor->GetAnimator()->PlayAnimation("WarriorMale/OnehandSword/Walk", true);
+	}
+	if (input.IsKeyPressed(EInputKey::KEY_3))
+	{
+		pSkeletalActor->GetAnimator()->PlayAnimation("WarriorMale/OnehandSword/Run", true);
+	}
+
 }
 
 void CAnubisEngine::InitializeEvents()

@@ -1,4 +1,3 @@
-#include "Stdafx.h"
 #include "Model/Animation.h"
 #include "Model/Skeleton.h"
 #include <assimp/Importer.hpp>		// C++ importer interface
@@ -6,16 +5,46 @@
 #include <assimp/scene.h>			// Output data structure
 #include "Logging/LogManager.h"
 
-CAnimation::CAnimation(const std::string& stAnimationFile, std::shared_ptr<CSkeleton> pAnimationSkeleton)
+bool CAnimation::LoadFromFile(const std::string& stAnimationFile, std::shared_ptr<CSkeleton> pAnimationSkeleton)
 {
+	m_bValid = false;
+
+	if (!pAnimationSkeleton)
+	{
+		syserr("CAnimation::LoadFromFile - null skeleton passed for '{}'", stAnimationFile);
+		return false;
+	}
+
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(stAnimationFile, aiProcess_Triangulate);
-	assert(scene && scene->mRootNode);
-	auto animation = scene->mAnimations[0];
-	m_fDuration = animation->mDuration;
-	m_iTicksPerSecond = animation->mTicksPerSecond;
+
+	if (!scene || !scene->mRootNode)
+	{
+		syserr("CAnimation::LoadFromFile - failed to load '{}': {}", stAnimationFile, importer.GetErrorString());
+		return false;
+	}
+
+	if (scene->mNumAnimations == 0)
+	{
+		syserr("CAnimation::LoadFromFile - '{}' contains no animation channels", stAnimationFile);
+		return false;
+	}
+
+	const aiAnimation* animation = scene->mAnimations[0];
+	if (animation->mNumChannels == 0)
+	{
+		syserr("CAnimation::LoadFromFile - '{}' animation has no bone channels", stAnimationFile);
+		return false;
+	}
+
+	m_fDuration = static_cast<float>(animation->mDuration);
+	m_iTicksPerSecond = static_cast<int32_t>(animation->mTicksPerSecond);
+
 	ReadHeirarchyData(m_sRootNode, scene->mRootNode);
 	ReadMissingBones(animation, pAnimationSkeleton);
+
+	m_bValid = true;
+	return true;
 }
 
 CBone* CAnimation::FindBone(const std::string& name)

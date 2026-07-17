@@ -153,12 +153,6 @@ void COpenGLCommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount
 	else if (instanceCount == 1)
 	{
 		// Fallback optimized call for single instances (Requires OpenGL 3.2+)
-		glDrawElementsBaseVertex(
-			GL_TRIANGLES,
-			indexCount,
-			indexType,
-			pIndicesOffset,
-			vertexOffset
-		);
+		glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, indexType, pIndicesOffset, vertexOffset);
 	}
 }

@@ -74,4 +74,8 @@ private:
     Matrix4 m_matLocalTransform;
     std::string m_stName;
     int32_t m_iBoneID;
+
+    mutable int32_t m_iLastPositionIndex = 0;
+    mutable int32_t m_iLastRotationIndex = 0;
+    mutable int32_t m_iLastScaleIndex = 0;
 };

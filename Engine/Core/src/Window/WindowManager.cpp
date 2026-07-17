@@ -3,6 +3,8 @@
 #include "Logging/LogManager.h"
 #include "TypeVector3.h"
 #include "Camera/Camera.h"
+#include "Input/InputManager.h"
+#include "Events/Events.hpp"
 
 bool CWindowManager::Initialize(const EWindowMode& windowMode, const EGraphicsAPI& api)
 {
@@ -258,9 +260,20 @@ void CWindowManager::SetKeyboardKey(int32_t key, int32_t action)
 		return;
 	}
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	auto& inputMgr = CServiceLocator::Instance().Get<CInputManager>();
+	EInputKey eKey = inputMgr.GLFWKeyToAnubisKey(key);
+
+	if (action == GLFW_PRESS)
 	{
-		glfwSetWindowShouldClose(GetGLFWWindow(), true);
+		CEventBus::Instance().Emit<SIKeyPressedEvent>(eKey, false);
+	}
+	else if (action == GLFW_REPEAT)
+	{
+		CEventBus::Instance().Emit<SIKeyPressedEvent>(eKey, true);
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		CEventBus::Instance().Emit<SIKeyReleasedEvent>(eKey);
 	}
 }
 
@@ -271,15 +284,35 @@ void CWindowManager::SetMouseKey(int32_t key, int32_t action)
 		syserr("Invalid Input, key %d out of range", key);
 		return;
 	}
+
+	auto& inputMgr = CServiceLocator::Instance().Get<CInputManager>();
+	EMouseButton eKey = inputMgr.GLFWMouseButtonToAnubisKey(key);
+
+	if (action == GLFW_PRESS)
+	{
+		CEventBus::Instance().Emit<SIMouseKeyPressedEvent>(eKey, false);
+	}
+	else if (action == GLFW_REPEAT)
+	{
+		CEventBus::Instance().Emit<SIMouseKeyPressedEvent>(eKey, true);
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		CEventBus::Instance().Emit<SIMouseKeyReleasedEvent>(eKey);
+	}
 }
 
 void CWindowManager::SetMousePosition(float fX, float fY)
 {
+	CEventBus::Instance().Emit<SIMouseMovedEvent>(fX, fY);
+
 	m_pCamera->ProcessMouse(Vector2D(fX, fY));
 }
 
 void CWindowManager::SetMouseScroll(float fMouseScrollValY)
 {
+	CEventBus::Instance().Emit<SIMouseScrolledEvent>(fMouseScrollValY);
+
 	m_pCamera->ProcessMouseScroll(fMouseScrollValY);
 }
 
