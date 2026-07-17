@@ -31,6 +31,12 @@ enum class EImageBindingLayout
     IMAGE_LAYOUT_PRESENT,
 };
 
+enum class EBiningLayoutSetsPoints
+{
+    BINDING_POINT_MATERIAL,         // SET 0
+    BINDING_POINT_FRAME_RESOURCES,  // SET 1
+};
+
 struct SBindingDesc
 {
     uint32_t          m_uiBinding = 0;

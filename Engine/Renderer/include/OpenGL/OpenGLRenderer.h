@@ -30,6 +30,7 @@ public:
 protected:
     bool InitializeRendererBuffers();
     void UpdateRendererBuffers();
+    void DestroyRendererBuffers();
 
 private:
     uint32_t m_uiCurrentFrame = 0;
@@ -37,7 +38,7 @@ private:
 	std::vector<SRenderInstance> m_vRenderItems = {};
 
     // Camera Matrix
-    std::vector<IBuffer*> m_vCameraUBO = {};
-    std::vector<IBuffer*> m_vJointsBuffer = {};
+    std::vector<IBuffer*> m_vCameraUBO = {}; // 2 Buffers .. 
+    std::vector<IBuffer*> m_vJointsBuffer = {}; // 2 Buffer
     std::shared_ptr<CActor> m_pActor = nullptr;
 };

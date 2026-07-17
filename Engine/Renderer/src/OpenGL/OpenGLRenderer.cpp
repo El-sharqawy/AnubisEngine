@@ -30,13 +30,7 @@ bool COpenGLRenderer::Initialize()
 
 void COpenGLRenderer::Destroy()
 {
-	if (m_pActor)
-	{
-		if (m_pActor->GetAsset()->GetModelAsset())
-		{
-			m_pActor->GetAsset()->GetModelAsset()->Clear();
-		}
-	}
+	DestroyRendererBuffers();
 }
 
 void COpenGLRenderer::BeginFrame()
@@ -202,4 +196,25 @@ void COpenGLRenderer::UpdateRendererBuffers()
 	joinsBufferDesc.cpuWrite = true;
 
 	renderDev.UpdateBuffer(m_vJointsBuffer[GetCurrentFrameIndex()], jointsMertices.data(), jointsBufferSize, 0);
+}
+
+void COpenGLRenderer::DestroyRendererBuffers()
+{
+	auto& renderDev = CServiceLocator::Get<CIRenderDevice>();
+
+	for (auto& cameraUBO : m_vCameraUBO)
+	{
+		renderDev.DestroyBuffer(cameraUBO);
+		AnubisSafeDelete(cameraUBO);
+		cameraUBO = nullptr;
+	}
+	for (auto& jointsSSBO : m_vJointsBuffer)
+	{
+		renderDev.DestroyBuffer(jointsSSBO);
+		AnubisSafeDelete(jointsSSBO);
+		jointsSSBO = nullptr;
+	}
+
+	m_vCameraUBO.clear();
+	m_vJointsBuffer.clear();
 }

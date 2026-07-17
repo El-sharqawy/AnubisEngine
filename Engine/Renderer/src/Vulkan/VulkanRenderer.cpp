@@ -241,8 +241,8 @@ void CVulkanRenderer::FlushRenderItems(ICommandList* pCmd)
 		vkCmd->BindPipeline(batch->pPipeline);
 		vkCmd->BindVertexBuffer(batch->pVertexBuffer);
 		vkCmd->BindIndexBuffer(batch->pIndexBuffer, EIndexType::INDEX_TYPE_UINT32);
-		vkCmd->BindMaterial(batch->pMaterial, GetCurrentFrameIndex());
-		vkCmd->BindFrameDescriptorSet(m_pFrameDescriptorContext->GetDescriptorSet(GetCurrentFrameIndex()));
+		vkCmd->BindMaterial(batch->pMaterial, GetCurrentFrameIndex()); // set 0
+		vkCmd->BindFrameDescriptorSet(m_pFrameDescriptorContext->GetDescriptorSet(GetCurrentFrameIndex()), EBiningLayoutSetsPoints::BINDING_POINT_FRAME_RESOURCES); // set 1
 
 		SUniformBufferBlockModel modelData{};
 		modelData.matModel = renderItem.modelMatrix;

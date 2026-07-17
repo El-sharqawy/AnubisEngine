@@ -85,29 +85,18 @@ void CVulkanCommandList::BindMaterial(IMaterial* material, uint32_t frameIndex)
 	assert(m_pBoundPipeline != nullptr);
 
 	auto* vkMaterial = static_cast<CVulkanMaterial*>(material);
-	VkCommandBuffer cmd = GetActiveCommandBuffer();
-
 	VkDescriptorSet set = vkMaterial->GetDescriptorSet(frameIndex);
 
-	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pBoundPipeline->GetPipelineLayout(), 0, 1, &set, 0, nullptr);
+	BindFrameDescriptorSet(set, EBiningLayoutSetsPoints::BINDING_POINT_MATERIAL);
 }
 
-void CVulkanCommandList::BindFrameDescriptorSet(VkDescriptorSet set)
+void CVulkanCommandList::BindFrameDescriptorSet(VkDescriptorSet set, EBiningLayoutSetsPoints firstSet)
 {
 	assert(m_pBoundPipeline != nullptr);
 
 	VkCommandBuffer cmd = GetActiveCommandBuffer();
-
-	vkCmdBindDescriptorSets(
-		cmd,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		m_pBoundPipeline->GetPipelineLayout(),
-		1, // set 0 = frame/global
-		1,
-		&set,
-		0,
-		nullptr);
-
+	uint32_t setNum = static_cast<uint32_t>(firstSet);
+	vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pBoundPipeline->GetPipelineLayout(), setNum, 1, &set, 0, nullptr);
 }
 
 void CVulkanCommandList::PushConstants(const void* data, uint32_t size, uint32_t offset)

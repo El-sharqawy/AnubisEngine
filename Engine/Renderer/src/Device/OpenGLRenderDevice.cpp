@@ -64,6 +64,8 @@ void COpenGLRenderDevice::Shutdown()
 	CPipelinesManager::Instance().Clear();
 	CTexturesManager::Instance().Destroy();
 
+	m_pOpenGLRenderer->Destroy();
+
 	gladLoaderUnloadGL();
 }
 
