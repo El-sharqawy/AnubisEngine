@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Entity.h"
+#include "API/Entity.h"
 #include "Transform.h"
 
-class CTransformComponent : public CIComponent
+class CTransformComponent : public IComponent
 {
 public:
     CTransformComponent() = default;

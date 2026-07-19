@@ -26,6 +26,9 @@ void CVulkanMaterial::ClearMaterial()
 	auto& renderDev = CServiceLocator::Get<CIRenderDevice>();
 	auto& vkRenderDevice = static_cast<CVulkanRenderDevice&>(renderDev);
 
+	// wait to finish using our materials
+	vkDeviceWaitIdle(vkRenderDevice.GetDevice());
+
 	// Clear Diffuse And Specular
 	if (m_pDiffuseMap)
 	{

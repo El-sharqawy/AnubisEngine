@@ -16,15 +16,17 @@ endif()
 # Set all sources recursively
 set(Scene_Sources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Scene.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/SceneManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity/LightComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity/SkeletalMeshComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity/TransformComponent.cpp
 )
 
 set(Scene_Headers
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Core/Scene.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Entity/Entity.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Entity/IComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Core/SceneManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Entity/LightComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Entity/SkeletalMeshComponent.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Entity/TransformComponent.h
 )
 

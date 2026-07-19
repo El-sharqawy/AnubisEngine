@@ -4,7 +4,7 @@
 #include <typeindex>
 #include <type_traits>
 #include <unordered_map>
-#include "Entity/IComponent.h"
+#include "API/IComponent.h"
 
 class CEntity
 {
@@ -33,7 +33,7 @@ public:
     template<typename T, typename... TArgs>
     T& AddComponent(TArgs&&... Args)
     {
-        static_assert(std::is_base_of_v<CIComponent, T>, "T must derive from CIComponent");
+        static_assert(std::is_base_of_v<IComponent, T>, "T must derive from IComponent");
 
         std::type_index Type = std::type_index(typeid(T));
         std::unique_ptr<T> NewComponent = std::make_unique<T>(std::forward<TArgs>(Args)...);
@@ -46,7 +46,7 @@ public:
     template<typename T>
     bool HasComponent() const
     {
-        static_assert(std::is_base_of_v<CIComponent, T>, "T must derive from CIComponent");
+        static_assert(std::is_base_of_v<IComponent, T>, "T must derive from IComponent");
 
         std::type_index Type = std::type_index(typeid(T));
         return m_mComponents.find(Type) != m_mComponents.end();
@@ -55,7 +55,7 @@ public:
     template<typename T>
     T* GetComponent()
     {
-        static_assert(std::is_base_of_v<CIComponent, T>, "T must derive from CIComponent");
+        static_assert(std::is_base_of_v<IComponent, T>, "T must derive from IComponent");
 
         std::type_index Type = std::type_index(typeid(T));
         auto It = m_mComponents.find(Type);
@@ -69,7 +69,7 @@ public:
     template<typename T>
     const T* GetComponent() const
     {
-        static_assert(std::is_base_of_v<CIComponent, T>, "T must derive from IComponent");
+        static_assert(std::is_base_of_v<IComponent, T>, "T must derive from IComponent");
 
         std::type_index Type = std::type_index(typeid(T));
         auto It = m_mComponents.find(Type);
@@ -83,7 +83,7 @@ public:
     template<typename T>
     void RemoveComponent()
     {
-        static_assert(std::is_base_of_v<CIComponent, T>, "T must derive from IComponent");
+        static_assert(std::is_base_of_v<IComponent, T>, "T must derive from IComponent");
 
         std::type_index Type = std::type_index(typeid(T));
         m_mComponents.erase(Type);
@@ -92,5 +92,5 @@ public:
 private:
     EntityID m_uiID;
     std::string m_stName;
-    std::unordered_map<std::type_index, std::unique_ptr<CIComponent>> m_mComponents;
+    std::unordered_map<std::type_index, std::unique_ptr<IComponent>> m_mComponents;
 };

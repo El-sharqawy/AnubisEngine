@@ -36,25 +36,53 @@ enum class EBufferMemoryType
 	BUFFER_MEMORY_CPU_READ_WRITE,
 };
 
-// Textures Binding Points
-enum class EBufferBindingPointsSetZero
+enum class EBindingLayoutSetsPoints : uint32_t
 {
-	BINDING_POINT_SET_ZERO_SAMPLER_0, // Not bound to any point
-	BINDING_POINT_SET_ZERO_SAMPLER_1,
-	BINDING_POINT_SET_ZERO_SAMPLER_2,
-	BINDING_POINT_SET_ZERO_SAMPLER_3,
-	BINDING_POINT_SET_ZERO_SAMPLER_4,
-	BINDING_POINT_SET_ZERO_SAMPLER_5,
-	BINDING_POINT_SET_ZERO_MAX,
+	BINDING_POINT_SET_MATERIAL,         // SET 0
+	BINDING_POINT_SET_FRAME_RESOURCES,  // SET 1
+	BINDING_POINT_SET_BONES_RESOURCES,  // SET 2
+	BINDING_POINT_SET_MAX_NUM,
+};
+
+// Textures Binding Points
+enum class EMaterialBindingSets : uint32_t
+{
+	BINDING_POINT_MATERIAL_SET_SAMPLER_0,
+	BINDING_POINT_MATERIAL_SET_SAMPLER_1,
+	BINDING_POINT_MATERIAL_SET_SAMPLER_2,
+	BINDING_POINT_MATERIAL_SET_SAMPLER_3,
+	BINDING_POINT_MATERIAL_SET_SAMPLER_4,
+	BINDING_POINT_MATERIAL_SET_SAMPLER_5,
+	BINDING_POINT_MATERIAL_SET_MAX,
 };
 
 // Buffers Binding Points
-enum class EBufferBindingPointsSetOne
+enum class EUniformBuffersBindingSets : uint32_t
 {
-	BINDING_POINT_SET_ONE_CAMERA_UBO,
-	BINDING_POINT_SET_ONE_BONES_SSBO,
-	BINDING_POINT_SET_ONE_MODEL_UBO, // OpenGL
-	BINDING_POINT_SET_ONE_MAX,
+	BINDING_POINT_UBO_CAMERA,
+	BINDING_POINT_UBO_MODEL, // OpenGL
+	BINDING_POINT_UBO_MAX,
+};
+
+enum class EStorageBufferBindingSets : uint32_t
+{
+	BINDING_POINT_BONES_SSBO,
+};
+
+struct SBindingSets
+{
+	EBindingLayoutSetsPoints bindingSet = EBindingLayoutSetsPoints::BINDING_POINT_SET_MAX_NUM;
+	uint32_t bindingPoint = UINT32_MAX; // only meaningful for UBO/SSBO, UINT32_MAX = not bound to any base
+
+	bool IsValid() const
+	{
+		return bindingSet != EBindingLayoutSetsPoints::BINDING_POINT_SET_MAX_NUM && bindingPoint != UINT32_MAX;
+	}
+
+	uint32_t GetPackedKey() const
+	{
+		return (static_cast<uint32_t>(bindingSet) << 16) | bindingPoint;
+	}
 };
 
 struct SBufferDesc
@@ -62,9 +90,7 @@ struct SBufferDesc
 	std::string m_stName = "Buffer";
 	EBufferType m_eType = EBufferType::BUFFER_TYPE_VERTEX;
 	EBufferMemoryType m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_GPU_ONLY;
-	EBufferBindingPointsSetZero m_eBindingPointZero = EBufferBindingPointsSetZero::BINDING_POINT_SET_ZERO_MAX;
-	EBufferBindingPointsSetOne m_eBindingPointOne = EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MAX;
-
+	SBindingSets m_sBindingSets{};
 	uint64_t m_uiSize = 0;
 	bool cpuWrite = false;
 };
@@ -76,6 +102,8 @@ public:
 	virtual const std::string& GetName() const = 0;
 	virtual EBufferType GetType() const = 0;
 	virtual EBufferMemoryType GetMemoryType() const = 0;
+	virtual EBindingLayoutSetsPoints GetBindingLayoutSetsPoint() const = 0;
+	virtual uint32_t GetBindingPoint() const = 0;
 	virtual uint64_t GetSize() const = 0;
 	virtual bool IsValid() const = 0;
 
@@ -84,6 +112,7 @@ protected:
 	std::string m_stName = "Buffer";
 	EBufferType m_eType = EBufferType::BUFFER_TYPE_VERTEX;
 	EBufferMemoryType m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_GPU_ONLY;
+	SBindingSets m_sBindingSets{};
 	uint64_t m_uiSize = 0;
 	bool m_bIsValid = false;
 };

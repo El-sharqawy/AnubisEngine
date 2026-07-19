@@ -203,11 +203,6 @@ GLenum OpenGLUtils::ToGLBufferType(EBufferType bufferType)
 	}
 }
 
-GLenum OpenGLUtils::ToGLBufferBindingPoint(EBufferBindingPointsSetOne bufferBindingPoint)
-{
-	return (static_cast<uint32_t>(bufferBindingPoint));
-}
-
 GLenum OpenGLUtils::ToGLTextureType(ETextureType textureType)
 {
 	switch (textureType)

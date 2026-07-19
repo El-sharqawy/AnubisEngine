@@ -4,7 +4,6 @@
 #include "Device/VulkanRenderDevice.h"
 #include "Device/OpenGLRenderDevice.h"
 #include "API/ActorData.h"
-#include "Actor/SkeletalActor.h"
 
 bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 {
@@ -29,6 +28,8 @@ bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 	CServiceLocator::Register(&actors_manager);
 	CServiceLocator::Register(&animations_manager);
 	CServiceLocator::Register(&render_queue);
+	CServiceLocator::Register(&scene_manager);
+	CServiceLocator::Register(&skin_palette_manager);
 
 	CIRenderDevice* pRenderDevice = CreateRenderDevice(api).release();
 
@@ -58,6 +59,8 @@ bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 	 	return false;
 	}
 
+	CServiceLocator::Get<CSceneManager>().Initialize();
+
 	// Initialize Events
 	InitializeEvents();
 
@@ -66,6 +69,8 @@ bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 
 void CAnubisEngine::Destroy()
 {
+	CServiceLocator::Get<CSceneManager>().Destroy();
+
 	// Destroy CPU Systems in reverse order
 	CServiceLocator::Get<CIRenderDevice>().Shutdown();
 
@@ -135,27 +140,6 @@ void CAnubisEngine::ProcessInput(float deltaTime)
 		syslog("Attemp to Shutdown the Engine...");
 		RequestShutdown();
 	}
-
-	auto& assimpImporter = CServiceLocator::Get<CAssimpModelImporter>();
-	auto& actorsMgr = CServiceLocator::Get<CActorsManager>();
-	const SActorInfo pInfo = actorsMgr.GetActorInfo("Warrior_Male");
-	std::shared_ptr<CActor> pActor = pInfo.pActor;
-
-	std::shared_ptr<CSkeletalActor> pSkeletalActor = std::dynamic_pointer_cast<CSkeletalActor>(pActor);
-
-	if (input.IsKeyPressed(EInputKey::KEY_1))
-	{
-		pSkeletalActor->GetAnimator()->PlayAnimation("WarriorMale/OnehandSword/Idle", true);
-	}
-	if (input.IsKeyPressed(EInputKey::KEY_2))
-	{
-		pSkeletalActor->GetAnimator()->PlayAnimation("WarriorMale/OnehandSword/Walk", true);
-	}
-	if (input.IsKeyPressed(EInputKey::KEY_3))
-	{
-		pSkeletalActor->GetAnimator()->PlayAnimation("WarriorMale/OnehandSword/Run", true);
-	}
-
 }
 
 void CAnubisEngine::InitializeEvents()
@@ -307,9 +291,9 @@ void CAnubisEngine::HandleInput(float deltaTime)
 void CAnubisEngine::Update(float deltaTime)
 {
 	auto& window = CServiceLocator::Get<CWindowManager>();
-	auto& actorsMgr = CServiceLocator::Get<CActorsManager>();
+	auto& sceneMgr = CServiceLocator::Get<CSceneManager>();
 	window.Update(deltaTime);
-	actorsMgr.Update(deltaTime);
+	sceneMgr.Update(deltaTime);
 }
 
 void CAnubisEngine::Render(float deltaTime)

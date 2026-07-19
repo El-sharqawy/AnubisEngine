@@ -5,15 +5,13 @@
 #include "Vulkan/VulkanBuffer.h"
 #include "Vulkan/VulkanTexture2D.h"
 #include "Vulkan/VulkanMaterial.h"
-#include "Model/StaticModel.h"
-#include "Model/SkeletalModel.h"
-#include "Actor/SkeletalActor.h"
 #include "Window/WindowManager.h"
 #include "Camera/Camera.h"
 #include "Textures/TexturesManager.h"
 #include "Services/AssimpModelImporter.h"
 #include "Services/ActorsManager.h"
 #include "Services/RenderQueue.h"
+#include "Core/SceneManager.h"
 
 EGraphicsAPI CVulkanRenderDevice::GetAPI() const
 {
@@ -124,6 +122,10 @@ void CVulkanRenderDevice::Present()
 {
 	ICommandList* cmd = GetCommandList();
 	m_pVulkanRenderer->Present();
+
+	auto& sceneMgr = CServiceLocator::Get<CSceneManager>();
+	sceneMgr.Render();
+
 	m_pVulkanRenderer->FlushRenderItems(cmd);
 }
 

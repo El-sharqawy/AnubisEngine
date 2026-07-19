@@ -17,10 +17,11 @@ bool COpenGLPipeline::Initialize(const SPipelineDesc& desc)
 	}
 
 	SBufferDesc bufferDesc{};
-	bufferDesc.m_stName = "Model SSBO";
+	bufferDesc.m_stName = "Model UBO";
 	bufferDesc.m_eType = EBufferType::BUFFER_TYPE_UNIFORM;
 	bufferDesc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
-	bufferDesc.m_eBindingPointOne = EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MODEL_UBO; // Binding Point 2
+	bufferDesc.m_sBindingSets.bindingSet = EBindingLayoutSetsPoints::BINDING_POINT_SET_FRAME_RESOURCES;
+	bufferDesc.m_sBindingSets.bindingPoint = static_cast<uint32_t>(EUniformBuffersBindingSets::BINDING_POINT_UBO_MODEL);
 	bufferDesc.m_uiSize = sizeof(SUniformBufferBlockModel);
 	bufferDesc.cpuWrite = true;
 

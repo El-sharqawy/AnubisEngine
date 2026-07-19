@@ -25,6 +25,8 @@ void CVulkanBuffer::UpdateBufferData(const SVulkanBufferData& vulkanBufferData, 
 	m_stName = bufferDesc.m_stName;
 	m_eType = bufferDesc.m_eType;
 	m_eMemoryType = bufferDesc.m_eMemoryType;
+	m_sBindingSets.bindingSet = bufferDesc.m_sBindingSets.bindingSet;
+	m_sBindingSets.bindingPoint = bufferDesc.m_sBindingSets.bindingPoint;
 	m_uiSize = bufferDesc.m_uiSize;
 	m_bIsValid = true;
 }

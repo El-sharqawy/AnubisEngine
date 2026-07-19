@@ -37,6 +37,8 @@ public:
 	const std::string& GetName() const override { return (m_stName); }
 	EBufferType GetType() const override { return (m_eType); }
 	EBufferMemoryType GetMemoryType() const override { return (m_eMemoryType); }
+	EBindingLayoutSetsPoints GetBindingLayoutSetsPoint() const override { return (m_sBindingSets.bindingSet); }
+	uint32_t GetBindingPoint() const override { return (m_sBindingSets.bindingPoint); }
 	uint64_t GetSize() const override { return (m_uiSize); }
 	bool IsValid() const override { return (m_bIsValid); }
 

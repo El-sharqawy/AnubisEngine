@@ -47,6 +47,8 @@ public:
     void DestroyVertexArray(CVertexArray* pVertexArray);
 
     bool UpdateBuffer(IBuffer* pBuffer, const void* pData, size_t size, size_t dstOffset = 0) override;
+    EBufferResizeResult EnsureBufferCapacity(IBuffer*& pBuffer, uint64_t requiredSize, const SBufferDesc& templateDesc) override;
+
     ICommandList* GetCommandList() override;
     void Resize(int32_t width, int32_t height) override;
 

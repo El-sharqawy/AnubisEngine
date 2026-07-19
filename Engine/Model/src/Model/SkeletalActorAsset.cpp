@@ -1,5 +1,5 @@
 #include "Stdafx.h"
-#include "Actor/SkeletalActorAsset.h"
+#include "Model/SkeletalActorAsset.h"
 #include "Model/Animator.h"
 #include "Logging/LogManager.h"
 

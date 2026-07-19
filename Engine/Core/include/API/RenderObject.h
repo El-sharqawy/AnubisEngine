@@ -44,7 +44,8 @@ struct SRenderInstance
 
     Matrix4 modelMatrix{ 1.0f };
 
-    uint32_t skinPaletteIndex = UINT32_MAX;
+    uint32_t skinPaletteFirstMatrix = UINT32_MAX;
+    uint32_t skinMatrixCount = 0;
     uint32_t flags = 0;
 
     float depth = 0.0f;

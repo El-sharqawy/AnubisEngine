@@ -36,7 +36,6 @@ namespace OpenGLUtils
     GLbitfield ToGLBufferStorageFlags(EBufferMemoryType bufferMemoryType);
     GLenum ToGLBufferUsage(EBufferMemoryType bufferMemoryType);
     GLenum ToGLBufferType(EBufferType bufferType);
-    GLenum ToGLBufferBindingPoint(EBufferBindingPointsSetOne bufferBindingPoint);
 
     // Textures
     GLenum ToGLTextureType(ETextureType textureType);

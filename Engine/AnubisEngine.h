@@ -14,6 +14,8 @@
 #include "Services/AnimationsManager.h"
 #include "Services/AssimpModelImporter.h"
 #include "Services/RenderQueue.h"
+#include "Services/SkinPaletteManager.h"
+#include "Core/SceneManager.h"
 
 #define AnubisInstance(T)				CServiceLocator::Instance().Get<T>()
 #define AnubisInstancePtr(T)			CServiceLocator::Instance().GetPtr<T>()
@@ -72,6 +74,8 @@ protected:
 	CActorsManager actors_manager;
 	CAnimationsManager animations_manager;
 	CRenderQueue render_queue;
+	CSceneManager scene_manager;
+	CSkinPaletteManager skin_palette_manager;
 
 private:
 	bool m_bIsRunning = true;

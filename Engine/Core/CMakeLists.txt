@@ -29,6 +29,8 @@ set(Core_Headers
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/BindingContext.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/Buffer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/CommandList.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/Entity.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/IComponent.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/Material.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/Pipeline.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/API/RenderDevice.h

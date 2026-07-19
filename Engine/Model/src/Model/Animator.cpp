@@ -51,6 +51,11 @@ void CAnimator::UpdateAnimation(float deltaTime)
         return;
     }
 
+    if (!IsUpdating())
+    {
+        return;
+    }
+
     AdvancePlayback(m_sCurrentState, deltaTime);
 
     if (m_bBlending && m_sNextState.pCurrentAnimation)
@@ -395,6 +400,16 @@ const Matrix4& CAnimator::GetBoneModelTransform(const std::string& boneName) con
 void CAnimator::SetBlendingEnabled(bool bEnabled)
 {
     m_bBlending = bEnabled;
+}
+
+bool CAnimator::IsUpdating() const
+{
+    return (m_bUpdating);
+}
+
+void CAnimator::SetUpdating(bool bEnabled)
+{
+    m_bUpdating = bEnabled;
 }
 
 int32_t CAnimator::BuildRuntimeNodeRecursive(

@@ -68,7 +68,7 @@ public:
     bool UpdateBufferWithStaging(IBuffer* pBuffer, const void* pData, size_t size, size_t dstOffset = 0);
     bool RecreateSwapchain();
     bool TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
-    EBufferResizeResult EnsureBufferCapacity(IBuffer*& pBuffer, VkDeviceSize requiredSize, const SBufferDesc& templateDesc);
+    EBufferResizeResult EnsureBufferCapacity(IBuffer*& pBuffer, uint64_t requiredSize, const SBufferDesc& templateDesc) override;
 
 protected:
 	bool CreateInstance();

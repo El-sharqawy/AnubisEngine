@@ -134,11 +134,9 @@ IBuffer* COpenGLRenderDevice::CreateBuffer(const SBufferDesc& bufferDesc, const 
 
 	pBuffer->UpdateBufferData(bufferDesc, uiID); // no binding point
 
-	GLenum bindingPoint = OpenGLUtils::ToGLBufferBindingPoint(pBuffer->GetBindingPoint());
-
 	if (pBuffer->IsBoundToBase())
 	{
-		glBindBufferBase(bufferType, bindingPoint, pBuffer->GetBufferID()); // Bind no buffer to this binding point
+		glBindBufferBase(bufferType, pBuffer->GetBindingPoint(), pBuffer->GetBufferID()); // Bind no buffer to this binding point
 	}
 
 #if defined(ENABLE_DEBUG_LOGS)
@@ -528,10 +526,10 @@ void COpenGLRenderDevice::DestroyBuffer(IBuffer* pBuffer)
 	COpenGLBuffer* glBuffer = dynamic_cast<COpenGLBuffer*>(pBuffer);
 
 	GLenum bufferType = OpenGLUtils::ToGLBufferType(pBuffer->GetType());
-	GLenum bindingPoint = OpenGLUtils::ToGLBufferBindingPoint(glBuffer->GetBindingPoint());
 
 	if (glBuffer->IsBoundToBase())
 	{
+		GLenum bindingPoint = glBuffer->GetBindingPoint();
 		glBindBufferBase(bufferType, bindingPoint, 0); // Bind no buffer to this binding point
 	}
 
@@ -716,10 +714,9 @@ bool COpenGLRenderDevice::UpdateBuffer(IBuffer* pBuffer, const void* pData, size
 		glBuffer->UpdateBufferSize(uiNewSize);
 
 		// Re-bind to base point if it was a UBO/SSBO
-		GLenum eBingingPoint = OpenGLUtils::ToGLBufferBindingPoint(glBuffer->GetBindingPoint());
 		if (glBuffer->IsBoundToBase())
 		{
-			glBindBufferBase(bufferType, eBingingPoint, glBuffer->GetBufferID());
+			glBindBufferBase(bufferType, glBuffer->GetBindingPoint(), glBuffer->GetBufferID());
 			syslog("Buffer: {} is bound to point {}", glBuffer->GetName(), static_cast<uint32_t>(glBuffer->GetBindingPoint()));
 		}
 	}
@@ -743,6 +740,11 @@ bool COpenGLRenderDevice::UpdateBuffer(IBuffer* pBuffer, const void* pData, size
 	}
 
 	return (true);
+}
+
+EBufferResizeResult COpenGLRenderDevice::EnsureBufferCapacity(IBuffer*& pBuffer, uint64_t requiredSize, const SBufferDesc& templateDesc)
+{
+	return EBufferResizeResult();
 }
 
 ICommandList* COpenGLRenderDevice::GetCommandList()

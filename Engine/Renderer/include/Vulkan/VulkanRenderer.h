@@ -59,5 +59,4 @@ private:
     std::unique_ptr<CVulkanDescriptorContext> m_pFrameDescriptorContext;
     std::vector<IBuffer*> m_vCameraUBO = {};
     std::vector<IBuffer*> m_vJointsBuffer = {};
-    std::shared_ptr<CActor> m_pActor = nullptr;
 };

@@ -1,15 +1,15 @@
 #include "Services/ActorsManager.h"
+#include "Model/SkeletalActorAsset.h"
 #include "Services/AssimpModelImporter.h"
 #include "Services/AnimationsManager.h"
 #include "Crc/CRC32.h"
 #include "Logging/LogManager.h"
-#include "Actor/SkeletalActor.h"
 
 void CActorsManager::Destroy()
 {
 	for (auto& actor : m_mLoadedActors)
 	{
-		actor.second.pActor->Clear();
+		actor.second.pActorAsset->Clear();
 	}
 
 	m_mLoadedActors.clear();
@@ -27,9 +27,9 @@ std::shared_ptr<CActorAssetBase> CActorsManager::GetActorAsset(const std::string
 	}
 
 	// 2. If the mesh object pointer is already set, it's loaded. Return it.
-	if (infoIt->second.pActor->GetAsset())
+	if (infoIt->second.pActorAsset)
 	{
-		return infoIt->second.pActor->GetAsset();
+		return infoIt->second.pActorAsset;;
 	}
 
 	syserr("Failed to find Actor '{}'.", stActorName);
@@ -61,7 +61,7 @@ bool CActorsManager::LoadActor(const std::string& stActorName)
 
 	if (actorData != m_mLoadedActors.end())
 	{
-		if (actorData->second.pActor)
+		if (actorData->second.pActorAsset)
 		{
 			syslog("Actor '{}' is already loaded.", stActorName);
 			return (true); // Mesh is already loaded
@@ -70,23 +70,23 @@ bool CActorsManager::LoadActor(const std::string& stActorName)
 
 	const std::string& stMeshPath = actorData->second.stFilePath;
 	auto& assimpImporter = CServiceLocator::Get<CAssimpModelImporter>();
-	auto pNewActor = assimpImporter.ImportActor(stMeshPath, { actorData->second.bFlipUVs });
+	auto pNewActorAsset = assimpImporter.ImportActorAsset(stMeshPath, { actorData->second.bFlipUVs });
 
-	if (!pNewActor || !pNewActor->GetAsset())
+	if (!pNewActorAsset)
 	{
 		syserr("Failed to import actor '{}'.", stActorName);
 		return false;
 	}
 
 	// Update the map entry with the fully loaded CMesh object and its bounding box
-	actorData->second.pActor = pNewActor;
+	actorData->second.pActorAsset = pNewActorAsset;
 	// actorData->second.boundingBox = pNewActor->GetModelAsset()->ComputeMergedLocalBounds();
 
 	// Load declared attachment assets too.
 	LoadActorAttachments(stActorName);
 
 	// Load Animations
-	if (actorData->second.pActor->GetAsset()->GetType() == EActorAssetType::ACTOR_ASSET_TYPE_SKELETAL)
+	if (actorData->second.pActorAsset->GetType() == EActorAssetType::ACTOR_ASSET_TYPE_SKELETAL)
 	{
 		if (!LoadActorAnimations(stActorName))
 		{
@@ -162,7 +162,7 @@ bool CActorsManager::LoadActorAttachments(const std::string& stActorName)
 		attachedAsset.LocalOffset = attachment.sLocalOffset;
 		attachedAsset.bVisible = true;
 
-		it->second.pActor->GetAsset()->AddDefaultAttachment(attachedAsset);
+		it->second.pActorAsset->AddDefaultAttachment(attachedAsset);
 
 		syslog("Loaded attachment asset '{}' for actor '{}'.", attachment.stAssetName, stActorName);
 	}
@@ -179,21 +179,13 @@ bool CActorsManager::LoadActorAnimations(const std::string& stActorName)
 	}
 
 	SActorInfo& actorInfo = it->second;
-	auto pActorAsset = it->second.pActor;
+	auto pActorAsset = it->second.pActorAsset;
 
 	if (!pActorAsset)
 	{
 		return (false); // ??
 	}
-
-	std::shared_ptr<CSkeletalActor> pActorSkeletal = std::dynamic_pointer_cast<CSkeletalActor>(pActorAsset);
-
-	if (!pActorSkeletal->GetAsset())
-	{
-		return (false);
-	}
-
-	std::shared_ptr<CSkeletalActorAsset> pActorSkeletalAsset = std::dynamic_pointer_cast<CSkeletalActorAsset>(pActorSkeletal->GetAsset());
+	std::shared_ptr<CSkeletalActorAsset> pActorSkeletalAsset = std::dynamic_pointer_cast<CSkeletalActorAsset>(pActorAsset);
 
 	if (!pActorSkeletalAsset->GetSkeletalModel())
 	{
@@ -413,7 +405,7 @@ bool CActorsManager::LoadMeshesFromJson(const std::string& stActorsFilePath)
 				}
 			}
 
-			info.pActor = nullptr;
+			info.pActorAsset = nullptr;
 			m_mLoadedActors[actorName] = info;
 
 			// This is where you would call GetMesh(meshName) to pre-load all meshes.
@@ -437,12 +429,4 @@ bool CActorsManager::LoadMeshesFromJson(const std::string& stActorsFilePath)
 	}
 
 	return (true);
-}
-
-void CActorsManager::Update(float deltaTime)
-{
-	for (auto& actor : m_mLoadedActors)
-	{
-		actor.second.pActor->Update(deltaTime);
-	}
 }

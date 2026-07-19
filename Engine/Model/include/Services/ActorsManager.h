@@ -34,7 +34,6 @@ public:
 	bool RemoveMeshFromJson(const std::string& stActorsFilePath, const std::string stActorName);
 	bool LoadMeshesFromJson(const std::string& stActorsFilePath);
 
-	void Update(float deltaTime);
 private:
 	std::unordered_map<std::string, SActorInfo> m_mLoadedActors = {}; // Maps mesh names to their file paths and CRC32 hashes and physics objects
 	std::unordered_map<std::string, SActorAttachmentInfo> m_mLoadedActorsAssets = {}; // Maps assets names to their file paths and CRC32 hashes and physics objects

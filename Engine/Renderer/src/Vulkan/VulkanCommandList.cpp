@@ -87,10 +87,10 @@ void CVulkanCommandList::BindMaterial(IMaterial* material, uint32_t frameIndex)
 	auto* vkMaterial = static_cast<CVulkanMaterial*>(material);
 	VkDescriptorSet set = vkMaterial->GetDescriptorSet(frameIndex);
 
-	BindFrameDescriptorSet(set, EBiningLayoutSetsPoints::BINDING_POINT_MATERIAL);
+	BindFrameDescriptorSet(set, EBindingLayoutSetsPoints::BINDING_POINT_SET_MATERIAL);
 }
 
-void CVulkanCommandList::BindFrameDescriptorSet(VkDescriptorSet set, EBiningLayoutSetsPoints firstSet)
+void CVulkanCommandList::BindFrameDescriptorSet(VkDescriptorSet set, EBindingLayoutSetsPoints firstSet)
 {
 	assert(m_pBoundPipeline != nullptr);
 

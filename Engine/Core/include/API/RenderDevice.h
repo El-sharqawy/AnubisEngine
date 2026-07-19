@@ -40,6 +40,7 @@ public:
     virtual void DestroyMaterial(IMaterial* pMaterial) = 0;
 
     virtual bool UpdateBuffer(IBuffer* pBuffer, const void* pData, size_t size, size_t dstOffset = 0) = 0;
+    virtual EBufferResizeResult EnsureBufferCapacity(IBuffer*& pBuffer, uint64_t requiredSize, const SBufferDesc& templateDesc) = 0;
 
     virtual ICommandList* GetCommandList() = 0;
 

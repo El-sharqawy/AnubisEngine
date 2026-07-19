@@ -15,35 +15,32 @@ endif()
 
 # Set all sources recursively
 set(Model_Sources
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Actor/SkeletalActor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Actor/SkeletalActorAsset.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Actor/StaticActor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Actor/StaticActorAsset.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/Animation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/Animator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/Bone.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/SkeletalActorAsset.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/SkeletalMesh.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/SkeletalModel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/StaticActorAsset.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/StaticMesh.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/StaticModel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Services/ActorsManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Services/AnimationsManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Services/AssimpModelImporter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Services/RenderQueue.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Services/SkinPaletteManager.cpp
 )
 
 set(Model_Headers
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Actor/SkeletalActor.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Actor/SkeletalActorAsset.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Actor/StaticActor.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Actor/StaticActorAsset.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/Animation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/Animator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/Bone.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/SkeletalActorAsset.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/SkeletalMesh.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/SkeletalMeshData.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/SkeletalModel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/Skeleton.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/StaticActorAsset.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/StaticMesh.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/StaticMeshData.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Model/StaticModel.h
@@ -51,6 +48,7 @@ set(Model_Headers
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Services/AnimationsManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Services/AssimpModelImporter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/Services/RenderQueue.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/Services/SkinPaletteManager.h
 )
 
 add_library(Model STATIC)

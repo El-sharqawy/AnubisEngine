@@ -1,18 +1,16 @@
 #pragma once
 
-#include "Entity.h"
+#include "API/Entity.h"
 #include "TypeVector3.h"
 
 enum class ELightType
 {
-    Directional,
-    Point,
-    Spot
+    LIGHT_TYPE_DIRECTIONAL,
+    LIGHT_TYPE_POINT,
+    LIGHT_TYPE_SPOT,
 };
 
-class CFrameBuffer;
-
-class CLightComponent : public CIComponent
+class CLightComponent : public IComponent
 {
 public:
     CLightComponent() = default;
@@ -40,7 +38,7 @@ public:
     void SetCastShadows(bool v) { m_bCastShadows = v; }
 
 private:
-    ELightType m_eType = ELightType::Point;
+    ELightType m_eType = ELightType::LIGHT_TYPE_POINT;
 
     Vector3D m_v3Color = Vector3D(1.0f);
     float m_fIntensity = 1.0f;

@@ -396,6 +396,7 @@ VkDescriptorType VulkanUtils::ToVkDescriptorType(EBindingType type)
 		return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
 	default:
+		syserr("Unkonwn Vulkan Descriptor Type {}", static_cast<uint32_t>(type));
 		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	}
 }

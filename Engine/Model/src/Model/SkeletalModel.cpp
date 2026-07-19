@@ -233,12 +233,12 @@ bool CSkeletalModel::InitializeMaterialBindings()
 
         ctxDesc.m_vBindings = CDescriptorSetLayouts::GetMaterialsBindings();
 
-        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EBufferBindingPointsSetZero::BINDING_POINT_SET_ZERO_SAMPLER_0), material->GetMaterialDiffuseMap() ? material->GetMaterialDiffuseMap() : pFallbackWhite });
-        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EBufferBindingPointsSetZero::BINDING_POINT_SET_ZERO_SAMPLER_1), material->GetMaterialSpecularMap() ? material->GetMaterialSpecularMap() : pFallbackWhite });
-        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EBufferBindingPointsSetZero::BINDING_POINT_SET_ZERO_SAMPLER_2), material->GetMaterialPBRAlbedoMap() ? material->GetMaterialPBRAlbedoMap() : pFallbackWhite });
-        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EBufferBindingPointsSetZero::BINDING_POINT_SET_ZERO_SAMPLER_3), material->GetMaterialPBRNormalMap() ? material->GetMaterialPBRNormalMap() : pFallbackNormal });
-        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EBufferBindingPointsSetZero::BINDING_POINT_SET_ZERO_SAMPLER_4), material->GetMaterialPBRMetallicMap() ? material->GetMaterialPBRMetallicMap() : pFallbackWhite });
-        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EBufferBindingPointsSetZero::BINDING_POINT_SET_ZERO_SAMPLER_5), material->GetMaterialPBRRoughnessMap() ? material->GetMaterialPBRRoughnessMap() : pFallbackWhite });
+        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EMaterialBindingSets::BINDING_POINT_MATERIAL_SET_SAMPLER_0), material->GetMaterialDiffuseMap() ? material->GetMaterialDiffuseMap() : pFallbackWhite });
+        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EMaterialBindingSets::BINDING_POINT_MATERIAL_SET_SAMPLER_1), material->GetMaterialSpecularMap() ? material->GetMaterialSpecularMap() : pFallbackWhite });
+        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EMaterialBindingSets::BINDING_POINT_MATERIAL_SET_SAMPLER_2), material->GetMaterialPBRAlbedoMap() ? material->GetMaterialPBRAlbedoMap() : pFallbackWhite });
+        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EMaterialBindingSets::BINDING_POINT_MATERIAL_SET_SAMPLER_3), material->GetMaterialPBRNormalMap() ? material->GetMaterialPBRNormalMap() : pFallbackNormal });
+        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EMaterialBindingSets::BINDING_POINT_MATERIAL_SET_SAMPLER_4), material->GetMaterialPBRMetallicMap() ? material->GetMaterialPBRMetallicMap() : pFallbackWhite });
+        ctxDesc.m_vImageResources.push_back({ static_cast<uint32_t>(EMaterialBindingSets::BINDING_POINT_MATERIAL_SET_SAMPLER_5), material->GetMaterialPBRRoughnessMap() ? material->GetMaterialPBRRoughnessMap() : pFallbackWhite });
 
         if (!material->InitializeMaterial(ctxDesc))
         {

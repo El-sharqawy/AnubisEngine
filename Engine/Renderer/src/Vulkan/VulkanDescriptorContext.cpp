@@ -120,7 +120,7 @@ bool CVulkanDescriptorContext::Initialize(const SBindingContextDesc& desc)
 		{
 			if (frameIndex >= bufferRes.m_vBuffers.size() || bufferRes.m_vBuffers[frameIndex] == nullptr)
 			{
-				syserr("DescriptorContext: missing buffer resource for frame %u binding %u", frameIndex, bufferRes.m_uiBinding);
+				syserr("DescriptorContext: missing buffer resource for frame {} binding {}", frameIndex, bufferRes.m_uiBinding);
 				Destroy();
 				return false;
 			}

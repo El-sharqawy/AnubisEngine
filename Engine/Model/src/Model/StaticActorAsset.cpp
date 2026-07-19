@@ -1,4 +1,4 @@
-#include "Actor/StaticActorAsset.h"
+#include "Model/StaticActorAsset.h"
 #include "Logging/LogManager.h"
 
 EActorAssetType CStaticActorAsset::GetType() const

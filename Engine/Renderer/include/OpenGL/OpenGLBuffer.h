@@ -19,9 +19,8 @@ public:
     void UpdateBufferData(const SBufferDesc& bufferDesc, uint32_t uiBufferID);
 
     // OpenGL Only Data
-    EBufferBindingPointsSetOne GetBindingPoint() const { return (m_eBindingPoint); }
     uint32_t GetBufferID() const { return (m_uiBufferID); }
-    void SetBindingPoint(EBufferBindingPointsSetOne eBindingPt);
+    void SetBindingPoint(uint32_t uiBindingPt);
     bool IsBoundToBase() const;
     void UpdateBufferID(uint32_t uiNewBufferID);
     void UpdateBufferSize(uint64_t uiNewBufferSize);
@@ -30,10 +29,11 @@ public:
     const std::string& GetName() const override { return (m_stName); }
     EBufferType GetType() const override { return (m_eType); }
     EBufferMemoryType GetMemoryType() const override { return (m_eMemoryType); }
+    EBindingLayoutSetsPoints GetBindingLayoutSetsPoint() const override { return (m_sBindingSets.bindingSet); }
+    uint32_t GetBindingPoint() const override { return (m_sBindingSets.bindingPoint); }
     uint64_t GetSize() const override { return (m_uiSize); }
     bool IsValid() const override { return (m_bIsValid); }
 
 private:
-    EBufferBindingPointsSetOne m_eBindingPoint = EBufferBindingPointsSetOne::BINDING_POINT_SET_ONE_MAX; // only meaningful for UBO/SSBO, UINT32_MAX = not bound to any base
     uint32_t m_uiBufferID = 0;
 };

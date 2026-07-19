@@ -107,7 +107,7 @@ void COpenGLCommandList::PushConstants(const void* data, uint32_t size, uint32_t
 	// (Alternatively, your CommandList could manage a transient dynamic buffer)
 	COpenGLBuffer* glBufferUBO = dynamic_cast<COpenGLBuffer*>(glPipeline->GetPipelineConstants());
 	uint32_t uiPushConstantUBO = glBufferUBO->GetBufferID();
-	uint32_t uiBindingPoint = OpenGLUtils::ToGLBufferBindingPoint(glBufferUBO->GetBindingPoint());
+	uint32_t uiBindingPoint = glBufferUBO->GetBindingPoint();
 
 	if (uiPushConstantUBO == 0)
 	{

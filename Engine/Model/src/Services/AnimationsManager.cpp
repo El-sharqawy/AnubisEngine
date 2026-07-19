@@ -1,8 +1,8 @@
 #include "Services/AnimationsManager.h"
 #include "Logging/LogManager.h"
 #include "Services/ActorsManager.h"
-#include "Actor/SkeletalActor.h"
 #include "Crc/CRC32.h"
+#include "Model/SkeletalActorAsset.h"
 
 void CAnimationsManager::Destroy()
 {
@@ -71,7 +71,7 @@ bool CAnimationsManager::LoadAnimation(const std::string& stAnimationID)
 	auto& actorsMgr = CServiceLocator::Get<CActorsManager>();
 	auto actorInfo = actorsMgr.GetActorInfo(info.stActorName);
 
-	auto pActorAsset = actorInfo.pActor->GetAsset();
+	auto pActorAsset = actorInfo.pActorAsset;
 
 	if (!pActorAsset)
 	{

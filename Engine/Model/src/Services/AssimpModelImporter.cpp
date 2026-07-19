@@ -2,41 +2,10 @@
 #include "Model/StaticModel.h"
 #include "Model/SkeletalModel.h"
 #include "Model/Skeleton.h"
-#include "Actor/StaticActor.h"
-#include "Actor/SkeletalActor.h"
+#include "Model/StaticActorAsset.h"
+#include "Model/SkeletalActorAsset.h"
 #include "Logging/LogManager.h"
 #include "API/RenderDevice.h"
-
-std::shared_ptr<CActor> CAssimpModelImporter::ImportActor(const std::filesystem::path& filePath, const SModelImportOptions& options, EModelImportType importType)
-{
-    std::shared_ptr<CActorAssetBase> pActorAsset = ImportActorAsset(filePath, options, importType);
-    if (!pActorAsset)
-    {
-        return nullptr;
-    }
-
-    switch (pActorAsset->GetType())
-    {
-    case EActorAssetType::ACTOR_ASSET_TYPE_STATIC:
-    {
-        auto actor = std::make_shared<CStaticActor>();
-        actor->SetAsset(pActorAsset);
-        actor->InitializeFromAsset();
-        return actor;
-    }
-
-    case EActorAssetType::ACTOR_ASSET_TYPE_SKELETAL:
-    {
-        auto actor = std::make_shared<CSkeletalActor>();
-        actor->SetAsset(pActorAsset);
-        actor->InitializeFromAsset();
-        return actor;
-    }
-
-    default:
-        return nullptr;
-    }
-}
 
 std::shared_ptr<CActorAssetBase> CAssimpModelImporter::ImportActorAsset(const std::filesystem::path& filePath, const SModelImportOptions& options, EModelImportType importType)
 {

@@ -3,8 +3,8 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-#include "Buffer.h"
-#include "Texture.h"
+class ITexture2D;
+class IBuffer;
 
 using TDeviceOffset = uint64_t;
 using TDeviceSize = uint64_t;
@@ -29,12 +29,6 @@ enum class EImageBindingLayout
     IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT,
     IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY,
     IMAGE_LAYOUT_PRESENT,
-};
-
-enum class EBiningLayoutSetsPoints
-{
-    BINDING_POINT_MATERIAL,         // SET 0
-    BINDING_POINT_FRAME_RESOURCES,  // SET 1
 };
 
 struct SBindingDesc
@@ -64,7 +58,6 @@ struct SBindingImageResource
 struct SBindingContextDesc
 {
     std::vector<SBindingDesc> m_vBindings;
-
     std::vector<SBindingBufferResource> m_vBufferResources;
     std::vector<SBindingImageResource>  m_vImageResources;
 

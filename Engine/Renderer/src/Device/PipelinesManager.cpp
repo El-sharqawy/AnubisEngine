@@ -104,8 +104,11 @@ bool CPipelinesManager::CreateStaticMeshPipeline()
 
         VkDescriptorSetLayout materialsLayout = CDescriptorSetLayouts::GetMaterialsDescriptorsetLayout(context);
         VkDescriptorSetLayout framesLayout = CDescriptorSetLayouts::GetFrameDescriptorsetLayout(context);
+        VkDescriptorSetLayout bonesLayout = CDescriptorSetLayouts::GetBonesDescriptorsetLayout(context);
+
         pipeLineDesc.descriptorSetLayouts.push_back(materialsLayout);   // set 0
         pipeLineDesc.descriptorSetLayouts.push_back(framesLayout);      // set 1
+        pipeLineDesc.descriptorSetLayouts.push_back(bonesLayout);       // set 2
     }
     else if (renderDev.GetAPI() == EGraphicsAPI::API_OPENGL)
     {
@@ -155,8 +158,11 @@ bool CPipelinesManager::CreateSkeletalMeshPipeline()
 
         VkDescriptorSetLayout materialsLayout = CDescriptorSetLayouts::GetMaterialsDescriptorsetLayout(context);
         VkDescriptorSetLayout framesLayout = CDescriptorSetLayouts::GetFrameDescriptorsetLayout(context);
+        VkDescriptorSetLayout bonesLayout = CDescriptorSetLayouts::GetBonesDescriptorsetLayout(context);
+
         pipeLineDesc.descriptorSetLayouts.push_back(materialsLayout);   // set 0
         pipeLineDesc.descriptorSetLayouts.push_back(framesLayout);      // set 1
+        pipeLineDesc.descriptorSetLayouts.push_back(bonesLayout);       // set 2
     }
     else if (renderDev.GetAPI() == EGraphicsAPI::API_OPENGL)
     {

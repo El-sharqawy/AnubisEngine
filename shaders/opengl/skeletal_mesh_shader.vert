@@ -1,4 +1,6 @@
-#version 450
+#version 460
+
+#define RENDER_ITEM_SKINNED (1u << 0)
 
 layout(location = 0) in vec3 m_v3Position;
 layout(location = 1) in vec3 m_v3Normal;
@@ -18,41 +20,47 @@ layout(std140, binding = 0) uniform SCameraUBO
     mat4 ViewProjection;
 } cameraUBO;
 
-layout(std430, binding = 1) readonly buffer SJointBuffer
+layout(std140, binding = 1) uniform SModelData
 {
-    mat4 matFinalBoneMatrices[];
+    mat4 matModel;
+    uint skinPaletteFirstMatrix;
+    uint skinMatrixCount;
+    uint flags;
+    uint bPadding[1];
+} modelData;
+
+layout(std430, binding = 2) readonly buffer SJointBuffer
+{
+    mat4 boneMatrices[];
     // Offset 0 to 6400
     // No explicit padding array is required in GLSL because std430 
     // automatically aligns the end of the block to a vec4 boundary.
-} jointBufferSSBO;
+} bones;
 
-layout(std140, binding = 2) uniform SModelData
+mat4 GetSkinMatrix()
 {
-    mat4 matModel;
-    uint skinPaletteIndex;
-    uint flags;
-    uint bPadding[2];
-} modelData;
+    if ((modelData.flags & RENDER_ITEM_SKINNED) == 0u)
+    {
+        return mat4(1.0);
+    }
+
+    mat4 skinMatrix =
+        bones.boneMatrices[modelData.skinPaletteFirstMatrix + m_iv4BoneIndices.x] * m_v4BoneWeights.x +
+        bones.boneMatrices[modelData.skinPaletteFirstMatrix + m_iv4BoneIndices.y] * m_v4BoneWeights.y +
+        bones.boneMatrices[modelData.skinPaletteFirstMatrix + m_iv4BoneIndices.z] * m_v4BoneWeights.z +
+        bones.boneMatrices[modelData.skinPaletteFirstMatrix + m_iv4BoneIndices.w] * m_v4BoneWeights.w;
+
+    return skinMatrix;
+}
 
 void main()
 {
-    vec4 localPos = vec4(m_v3Position, 1.0);
-    vec3 localNormal = m_v3Normal;
-    vec3 localTangent = vec3(m_v4Tangent);
+    mat4 matSkin = GetSkinMatrix();
 
-    if (modelData.flags >= 1)
-    {
-        mat4 skinMat = jointBufferSSBO.matFinalBoneMatrices[modelData.skinPaletteIndex + m_iv4BoneIndices.x] * m_v4BoneWeights.x + 
-            jointBufferSSBO.matFinalBoneMatrices[modelData.skinPaletteIndex + m_iv4BoneIndices.y] * m_v4BoneWeights.y + 
-            jointBufferSSBO.matFinalBoneMatrices[modelData.skinPaletteIndex + m_iv4BoneIndices.z] * m_v4BoneWeights.z + 
-            jointBufferSSBO.matFinalBoneMatrices[modelData.skinPaletteIndex + m_iv4BoneIndices.w] * m_v4BoneWeights.w;
+    vec4 skinnedPos    = matSkin * vec4(m_v3Position, 1.0);
+    vec3 skinnedNormal = mat3(matSkin) * m_v3Normal;
 
-        localPos = skinMat * localPos;
-        localNormal = mat3(skinMat) * localNormal;
-        localTangent = mat3(skinMat) * localTangent;
-    }
-
-    vec4 worldPos = modelData.matModel * localPos;
+    vec4 worldPos = modelData.matModel * skinnedPos;
     gl_Position = cameraUBO.ViewProjection * worldPos;
     fragTexCoord = m_v2TexCoord;
 }

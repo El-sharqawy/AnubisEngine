@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include <memomry>
+#include <memory>
 #include <vector>
 #include <string>
 #include <cstdint>
-
-class CEntity;
+#include "API/Entity.h"
 
 class CScene
 {

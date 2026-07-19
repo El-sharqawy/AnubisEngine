@@ -49,12 +49,6 @@ enum class EModelImportType
 class CAssimpModelImporter
 {
 public:
-    // std::shared_ptr<CActor> ImportActor(const std::filesystem::path& filePath, const SModelImportOptions& options = {});
-    // std::shared_ptr<CActorAsset> ImportActorAsset(const std::filesystem::path& filePath, const SModelImportOptions& options = {});
-    // std::shared_ptr<CModel> ImportModel(const std::filesystem::path& filePath, const SModelImportOptions& options = {});
-
-    std::shared_ptr<CActor> ImportActor(const std::filesystem::path& filePath, const SModelImportOptions& options = {}, EModelImportType importType = EModelImportType::IMPORT_TYPE_AUTO);
-
     std::shared_ptr<CActorAssetBase> ImportActorAsset(const std::filesystem::path& filePath, const SModelImportOptions& options = {}, EModelImportType importType = EModelImportType::IMPORT_TYPE_AUTO);
     std::shared_ptr<CModelAssetBase> ImportModel(const std::filesystem::path& filePath, const SModelImportOptions& options = {}, EModelImportType importType = EModelImportType::IMPORT_TYPE_AUTO);
     std::shared_ptr<CSkeletalModel> ImportSkeletalModel(const std::filesystem::path& filePath, const SModelImportOptions& options = {});

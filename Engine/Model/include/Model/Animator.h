@@ -57,6 +57,9 @@ public:
 
     void SetBlendingEnabled(bool bEnabled);
 
+    bool IsUpdating() const;
+    void SetUpdating(bool bEnabled);
+
     int32_t BuildRuntimeNodeRecursive(
         const SAssimpNodeData* pNode,
         const std::shared_ptr<CAnimation>& pAnimation,
@@ -94,6 +97,6 @@ private:
     float m_fBlendTime = 0.0f;
     float m_fBlendTimer = 0.0f;
     bool  m_bBlending = false;
-
+    bool m_bUpdating = true;
     const CSkeleton* m_pSkeleton = nullptr;
 };
