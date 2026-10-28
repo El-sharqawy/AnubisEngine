@@ -74,13 +74,21 @@ bool CVulkanRenderDevice::Initialize(GLFWwindow* pPlatformWindowHandle)
 	m_pVulkanCommandList = std::make_unique<CVulkanCommandList>();
 	m_pVulkanCommandList->SetRenderer(m_pVulkanRenderer.get());
 
+	m_bInitialized = true;
 	return (true);
+}
+
+bool CVulkanRenderDevice::IsInitialized() const
+{
+	return (m_bInitialized);
 }
 
 void CVulkanRenderDevice::Shutdown()
 {
 	// Destroy in Reverse order
 	vkDeviceWaitIdle(m_pVulkanDevice->GetDevice());
+
+	m_bInitialized = false;
 
 	// Start Clearing
 	CServiceLocator::Get<CActorsManager>().Destroy();

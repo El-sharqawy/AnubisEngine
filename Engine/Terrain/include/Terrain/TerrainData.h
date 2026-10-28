@@ -235,13 +235,26 @@ struct STerrainVertex
 	}
 };
 
+/**
+ * @brief Structure matching the layout required for indirect indexed draw calls
+ *        (e.g., glDrawElementsIndirect, vkCmdDrawIndexedIndirect).
+ */
 struct SDrawElementsIndirectCommand
 {
-	uint32_t  count;         // Indices in patch
-	uint32_t  instanceCount; // 1
-	uint32_t  firstIndex;    // Offset in EBO
-	int32_t   baseVertex;    // Offset in VBO
-	uint32_t  baseInstance;  // 0
+	// Number of indices to draw for a single instance.
+	uint32_t count;
+
+	// Number of instances to draw (1 if not instanced).
+	uint32_t instanceCount;
+
+	// Byte offset into the index buffer, expressed as element count (firstIndex * sizeof(IndexType)).
+	uint32_t firstIndex;
+
+	// Constant value added to each index value read from the index buffer prior to indexing into vertex arrays.
+	int32_t baseVertex;
+
+	// Starting instance offset. Added to gl_InstanceID (Vulkan/GLSL) or used as starting index into per-instance vertex buffers.
+	uint32_t baseInstance;
 };
 
 using DrawElementsIndirectCommand = SDrawElementsIndirectCommand;

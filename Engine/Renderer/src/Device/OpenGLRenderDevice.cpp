@@ -15,6 +15,7 @@
 #include "Model/SkeletalModel.h"
 #include "Services/AssimpModelImporter.h"
 #include "Services/ActorsManager.h"
+#include "Core/SceneManager.h"
 
 #define ENABLE_DEBUG_LOGS
 
@@ -55,11 +56,19 @@ bool COpenGLRenderDevice::Initialize(GLFWwindow* pPlatformWindowHandle)
 		return (false);
 	}
 
+	m_bInitialized = true;
 	return (true);
+}
+
+bool COpenGLRenderDevice::IsInitialized() const
+{
+	return (m_bInitialized);
 }
 
 void COpenGLRenderDevice::Shutdown()
 {
+	m_bInitialized = false;
+
 	CServiceLocator::Get<CActorsManager>().Destroy();
 	CPipelinesManager::Instance().Clear();
 	CTexturesManager::Instance().Destroy();
@@ -89,6 +98,9 @@ void COpenGLRenderDevice::Present()
 {
 	// Render Stuff
 	m_pOpenGLRenderer->Present();
+
+	auto& sceneMgr = CServiceLocator::Get<CSceneManager>();
+	sceneMgr.Render();
 
 	ICommandList* cmd = GetCommandList();
 	m_pOpenGLRenderer->FlushRenderItems(cmd);
@@ -744,7 +756,54 @@ bool COpenGLRenderDevice::UpdateBuffer(IBuffer* pBuffer, const void* pData, size
 
 EBufferResizeResult COpenGLRenderDevice::EnsureBufferCapacity(IBuffer*& pBuffer, uint64_t requiredSize, const SBufferDesc& templateDesc)
 {
-	return EBufferResizeResult();
+	if (requiredSize == 0)
+	{
+		requiredSize = sizeof(Matrix4);
+	}
+
+	// Buffer Size Already more
+	if (pBuffer && pBuffer->GetSize() >= requiredSize)
+	{
+		return (EBufferResizeResult::BUFFER_RESIZE_UNCHANGED);
+	}
+
+	VkDeviceSize newSize = requiredSize;
+
+	if (pBuffer)
+	{
+		VkDeviceSize oldSize = pBuffer->GetSize();
+		newSize = std::max(requiredSize, oldSize * 2); // double capacity
+	}
+
+	SBufferDesc newDesc = templateDesc;
+	newDesc.m_uiSize = static_cast<uint32_t>(newSize);
+
+	IBuffer* pNewBufferBase = CreateBuffer(newDesc);
+	if (!pNewBufferBase)
+	{
+		syserr("Failed to create buffer {}", newDesc.m_stName);
+		return EBufferResizeResult::BUFFER_RESIZE_FAILED;
+	}
+
+	COpenGLBuffer* pNewBuffer = dynamic_cast<COpenGLBuffer*>(pNewBufferBase);
+	if (!pNewBuffer)
+	{
+		syserr("Failed to cast new buffer {}", newDesc.m_stName);
+		DestroyBuffer(pNewBufferBase);
+		AnubisSafeDelete(pNewBufferBase);
+		return EBufferResizeResult::BUFFER_RESIZE_FAILED;
+	}
+
+	IBuffer* pOldBuffer = pBuffer;
+	pBuffer = pNewBuffer;
+
+	if (pOldBuffer)
+	{
+		DestroyBuffer(pOldBuffer); // or RetireBuffer(pOldBuffer) if GPU may still use it
+		AnubisSafeDelete(pOldBuffer);
+	}
+
+	return (EBufferResizeResult::BUFFER_RESIZE_RECREATED);
 }
 
 ICommandList* COpenGLRenderDevice::GetCommandList()

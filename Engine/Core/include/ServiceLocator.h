@@ -18,6 +18,17 @@ public:
 	}
 
 	template <typename T>
+	inline static void UnRegister()
+	{
+		auto it = ms_mServices.find(std::type_index(typeid(T)));
+		if (it == ms_mServices.end())
+		{
+			return;
+		}
+		ms_mServices.erase(it);
+	}
+
+	template <typename T>
 	inline static T& Get()
 	{
 		T* pService = GetPtr<T>();

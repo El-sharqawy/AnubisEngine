@@ -110,7 +110,7 @@ bool CSkeletalMeshComponent::BuildRenderItemsNew(std::vector<SRenderInstance>& r
     return (true);
 }
 
-bool CSkeletalMeshComponent::AppendRenderItem(const Matrix4& matActor, std::vector<SRenderInstance>& renderInstances)
+bool CSkeletalMeshComponent::AppendRenderItem(const Matrix4& matActor, std::vector<SRenderInstance>& renderInstances) const
 {
     auto& skinPaletteManager = CServiceLocator::Get<CSkinPaletteManager>();
     SSkinPaletteGPUView gpuView = skinPaletteManager.UploadPalette(m_uiSkinPaletteHandle, m_pAnimator->GetFinalBoneMatrices());
@@ -156,14 +156,7 @@ bool CSkeletalMeshComponent::AppendAttachemntsRenderItems(const Matrix4& matActo
         Matrix4 matAttachmentWorld = matActor;
         if (attachment.eType == EAttachmentType::ATTACHMENT_TYPE_SOCKET)
         {
-            static bool bPrintMatBone = false;
             Matrix4 matBone = m_pAnimator->GetBoneModelTransform(attachment.strSocketName);
-            if (bPrintMatBone == false)
-            {
-                Anubis::PrintMatrix4(matBone);
-                bPrintMatBone = true;
-            }
-
             Matrix4 matLocal = EngineMath::ComposeTransform(
                 attachment.LocalOffset.m_v3Position,
                 EngineMath::Normalize(attachment.LocalOffset.m_qOrientation),

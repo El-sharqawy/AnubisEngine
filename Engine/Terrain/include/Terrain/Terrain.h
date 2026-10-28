@@ -15,7 +15,7 @@ public:
 
 	void GenerateTerrainPatches();
 	void GenerateTerrainPatches(int32_t iPatchNumX, int32_t iPatchNumZ);
-	void AppendVisibleData(std::vector<SDrawElementsIndirectCommand>& globalCmds);
+	void AppendTerrainRenderData(std::vector<SDrawElementsIndirectCommand>& globalCmds);
 
 	// Terrain Accessors
 public:

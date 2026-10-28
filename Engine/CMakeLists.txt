@@ -59,6 +59,7 @@ target_link_libraries(Engine
         Model
         Renderer
         Scene
+        Terrain
 
         # Extern Libraries
         glad
@@ -70,6 +71,7 @@ add_subdirectory(Core)
 add_subdirectory(Model)
 add_subdirectory(Renderer)
 add_subdirectory(Scene)
+add_subdirectory(Terrain)
 
 if (WIN32)
 target_link_libraries(Engine PRIVATE 

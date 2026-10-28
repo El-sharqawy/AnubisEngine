@@ -45,7 +45,12 @@ void CSceneManager::SpawnActorEntity(const SActorInfo& Info)
 
     std::shared_ptr<CSkeletalActorAsset> pActorAsset = std::dynamic_pointer_cast<CSkeletalActorAsset>(Info.pActorAsset);
     Actor.SetAsset(pActorAsset);
-    Actor.Initialize(&Entity);
+    if (!Actor.Initialize(&Entity))
+    {
+        syserr("Failed to Initialize Actor {}", Info.pActorAsset->GetName());
+    }
+
+    syslog("Initialized Actor {}", Info.pActorAsset->GetName());
 }
 
 void CSceneManager::Update(float deltaTime)

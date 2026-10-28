@@ -77,6 +77,8 @@ cmake --build .
 - `AnubisEngine.h` / `AnubisEngine.cpp` at the `Engine/` root wire up all subsystems through the Service Locator and drive the main loop (`Initialize` → `Run` → `Tick` → `HandleInput` / `Update` / `Render`).
 - `Stdafx.h` is used as a precompiled header across the `Engine` target.
 - Graphics API selection happens at `CAnubisEngine::Initialize(const EGraphicsAPI& api)`, which constructs either an `OpenGLRenderDevice` or `VulkanRenderDevice` via `CreateRenderDevice`.
+- Returning after time away? See [`docs/RETURNING_TO_ANUBIS.md`](docs/RETURNING_TO_ANUBIS.md) for a code map, Vulkan frame walkthrough, and short review routine.
+- For a deeper study reference, see [`docs/AnubisEngine_Study_Guide.docx`](docs/AnubisEngine_Study_Guide.docx).
 
 ## Roadmap
 

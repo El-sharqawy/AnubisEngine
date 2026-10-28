@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <array>
 #include <vector>
 
@@ -9,9 +8,6 @@
 #include "TerrainData.h"
 #include "Transform.h"
 #include "Frustum.h"
-
-class CVulkanBuffer;
-class CVulkanDevice;
 
 class CTerrainPatch
 {
@@ -68,16 +64,6 @@ public:
 	void SetPatchWaterHeight(float fHeight);
 	float GetPatchWaterHeight() const;
 
-	// Transform Accessor
-	STransform& GetTransform();
-	void SetTransform(const STransform& sTransform);
-
-	void SetPosition(const Vector3D& v3Position);
-	Vector3D GetPosition() const;
-
-	// Get Model Matrix
-	Matrix4 GetMatrix() const;
-
 	// Get Vertex at (X,Z) coordinate
 	Vector3D& GetVertex(int32_t x, int32_t z);
 	const Vector3D& GetVertex(int32_t x, int32_t z) const;
@@ -124,8 +110,6 @@ private:
 	bool m_bIsWaterPatch = false; // Is this patch a water patch?
 
 	float m_fPatchWaterHeight = 0.0f; // Store the height for this specific water patch
-
-	STransform m_sTransform = {}; // Transform for positioning the patch
 
 	Vector3D m_v3BoundsMin = Vector3D(FLT_MAX);
 	Vector3D m_v3BoundsMax = Vector3D(FLT_MIN);

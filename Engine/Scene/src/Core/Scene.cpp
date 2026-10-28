@@ -1,5 +1,4 @@
 #include "Core/Scene.h"
-#include "API/Entity.h"
 #include "Entity/SkeletalMeshComponent.h"
 
 void CScene::ClearEntities()

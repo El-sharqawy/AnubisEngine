@@ -19,6 +19,7 @@ public:
     virtual EGraphicsAPI GetAPI() const = 0;
 
     virtual bool Initialize(GLFWwindow* pPlatformWindowHandle) = 0;
+    virtual bool IsInitialized() const = 0;
     virtual void Shutdown() = 0;
 
     virtual void BeginFrame() = 0;
@@ -45,5 +46,8 @@ public:
     virtual ICommandList* GetCommandList() = 0;
 
     virtual void Resize(int32_t width, int32_t height) = 0;
+
+protected:
+    bool m_bInitialized = false;
 };
 

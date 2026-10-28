@@ -29,7 +29,7 @@ layout(std140, binding = 1) uniform SModelData
     uint bPadding[1];
 } modelData;
 
-layout(std430, binding = 2) readonly buffer SJointBuffer
+layout(std430, binding = 0) readonly buffer SJointBuffer
 {
     mat4 boneMatrices[];
     // Offset 0 to 6400

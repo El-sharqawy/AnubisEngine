@@ -4,7 +4,7 @@
 #include <typeindex>
 #include <type_traits>
 #include <unordered_map>
-#include "API/IComponent.h"
+#include "Entity/IComponent.h"
 
 class CEntity
 {

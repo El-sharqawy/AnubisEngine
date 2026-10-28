@@ -50,7 +50,8 @@ public:
 	void Render(float deltaTime);
 	void UpdateFPS() const;
 
-	std::unique_ptr<CIRenderDevice> CreateRenderDevice(const EGraphicsAPI& graphicsAPI);
+	CIRenderDevice* CreateRenderDevice(EGraphicsAPI graphicsAPI);
+	void SwitchGraphicsAPI(EGraphicsAPI graphicsAPI);
 
 	// Service Locators
 protected:
@@ -79,7 +80,6 @@ protected:
 
 private:
 	bool m_bIsRunning = true;
-	bool m_bIsWireframe = false;
 	bool m_bLimitFPS = false;
 
 	int32_t m_iTargetFPS = 60;

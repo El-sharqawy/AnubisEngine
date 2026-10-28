@@ -9,7 +9,6 @@ bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 {
 	m_eGraphicsAPI = api;
 	m_bIsRunning = true;
-	m_bIsWireframe = false;
 	m_bLimitFPS = false;
 
 	m_iTargetFPS = 240;
@@ -31,7 +30,7 @@ bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 	CServiceLocator::Register(&scene_manager);
 	CServiceLocator::Register(&skin_palette_manager);
 
-	CIRenderDevice* pRenderDevice = CreateRenderDevice(api).release();
+	CIRenderDevice* pRenderDevice = CreateRenderDevice(api);
 
 	CServiceLocator::Register<CIRenderDevice>(pRenderDevice);
 
@@ -48,7 +47,7 @@ bool CAnubisEngine::Initialize(const EGraphicsAPI& api)
 
 	// 4. Initialize Window Manager
 	auto& window = CServiceLocator::Get<CWindowManager>();
-	window.Initialize(EWindowMode::MODE_WINDOWED, api);
+	window.Initialize("AnubisEngine", EWindowMode::MODE_WINDOWED, api);
 
 	// 5. Initialize Input Manager
 	CServiceLocator::Get<CInputManager>().Initialize();
@@ -73,6 +72,9 @@ void CAnubisEngine::Destroy()
 
 	// Destroy CPU Systems in reverse order
 	CServiceLocator::Get<CIRenderDevice>().Shutdown();
+	auto* pRenderDev = CServiceLocator::GetPtr<CIRenderDevice>();
+	CServiceLocator::UnRegister<CIRenderDevice>();
+	AnubisSafeDelete(pRenderDev);
 
 	// Platform
 	CServiceLocator::Get<CWindowManager>().Destroy();
@@ -133,6 +135,16 @@ void CAnubisEngine::ProcessInput(float deltaTime)
 		{
 			window.SetWindowMode(EWindowMode::MODE_WINDOWED);
 		}
+	}
+
+	// Switch to Vulkan
+	if (input.IsKeyPressed(EInputKey::KEY_F1))
+	{
+		SwitchGraphicsAPI(EGraphicsAPI::API_VULKAN);
+	}
+	if (input.IsKeyPressed(EInputKey::KEY_F2))
+	{
+		SwitchGraphicsAPI(EGraphicsAPI::API_OPENGL);
 	}
 
 	if (input.IsKeyDown(EInputKey::KEY_ESCAPE))
@@ -292,15 +304,25 @@ void CAnubisEngine::Update(float deltaTime)
 {
 	auto& window = CServiceLocator::Get<CWindowManager>();
 	auto& sceneMgr = CServiceLocator::Get<CSceneManager>();
+
 	window.Update(deltaTime);
 	sceneMgr.Update(deltaTime);
 }
 
 void CAnubisEngine::Render(float deltaTime)
 {
-	CServiceLocator::Get<CIRenderDevice>().BeginFrame();
-	CServiceLocator::Get<CIRenderDevice>().Present();
-	CServiceLocator::Get<CIRenderDevice>().EndFrame();
+	auto* pRenderDev = CServiceLocator::GetPtr<CIRenderDevice>();
+	if (!pRenderDev)
+	{
+		return;
+	}
+
+	if (pRenderDev->IsInitialized())
+	{
+		CServiceLocator::Get<CIRenderDevice>().BeginFrame();
+		CServiceLocator::Get<CIRenderDevice>().Present();
+		CServiceLocator::Get<CIRenderDevice>().EndFrame();
+	}
 }
 
 void CAnubisEngine::UpdateFPS() const
@@ -312,17 +334,61 @@ void CAnubisEngine::UpdateFPS() const
 	}
 }
 
-std::unique_ptr<CIRenderDevice> CAnubisEngine::CreateRenderDevice(const EGraphicsAPI& graphicsAPI)
+CIRenderDevice* CAnubisEngine::CreateRenderDevice(EGraphicsAPI graphicsAPI)
 {
-	std::unique_ptr<CIRenderDevice> pRenderDevice = nullptr;
+	CIRenderDevice* pRenderDevice = nullptr;
 	if (graphicsAPI == EGraphicsAPI::API_VULKAN)
 	{
-		pRenderDevice = std::make_unique<CVulkanRenderDevice>();
+		pRenderDevice = AnubisNew(CVulkanRenderDevice, MEM_TAG_RENDERING);
 	}
 	else if (graphicsAPI == EGraphicsAPI::API_OPENGL)
 	{
-		pRenderDevice = std::make_unique<COpenGLRenderDevice>();
+		pRenderDevice = AnubisNew(COpenGLRenderDevice, MEM_TAG_RENDERING);
 	}
 
 	return (pRenderDevice);
+}
+
+void CAnubisEngine::SwitchGraphicsAPI(EGraphicsAPI graphicsAPI)
+{
+	auto& window = CServiceLocator::Get<CWindowManager>();
+
+	if (m_eGraphicsAPI == graphicsAPI)
+	{
+		return;
+	}
+
+	CServiceLocator::Get<CSceneManager>().Destroy();
+
+	CIRenderDevice* pOldDevice = CServiceLocator::GetPtr<CIRenderDevice>();
+	if (pOldDevice)
+	{
+		pOldDevice->Shutdown();
+		CServiceLocator::UnRegister<CIRenderDevice>();
+		AnubisSafeDelete(pOldDevice);
+	}
+
+	m_eGraphicsAPI = graphicsAPI;
+
+	window.DestroyWindow();
+	window.SwitchGraphicsAPI(m_eGraphicsAPI);
+
+	CIRenderDevice* pNewDevice = CreateRenderDevice(m_eGraphicsAPI);
+	if (!pNewDevice)
+	{
+		window.DestroyWindow();
+		return;
+	}
+
+	CServiceLocator::Register<CIRenderDevice>(pNewDevice);
+
+	if (!pNewDevice->Initialize(window.GetGLFWWindow()))
+	{
+		CServiceLocator::UnRegister<CIRenderDevice>();
+		AnubisSafeDelete(pNewDevice);
+		window.DestroyWindow();
+		return;
+	}
+
+	CServiceLocator::Get<CSceneManager>().Initialize();
 }

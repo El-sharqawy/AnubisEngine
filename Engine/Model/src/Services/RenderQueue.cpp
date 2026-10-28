@@ -2,27 +2,12 @@
 
 void CRenderQueue::BeginFrame()
 {
-	m_vFrameBoneMatrices.clear();
 	m_vRenderItems.clear();
 }
 
 void CRenderQueue::EndFrame()
 {
-	m_vFrameBoneMatrices.clear();
 	m_vRenderItems.clear();
-}
-
-uint32_t CRenderQueue::AllocateSkinPalette(const std::vector<Matrix4>& bonesMetrices)
-{
-	uint32_t startIndex = static_cast<uint32_t>(m_vFrameBoneMatrices.size());
-	m_vFrameBoneMatrices.insert(m_vFrameBoneMatrices.end(), bonesMetrices.begin(), bonesMetrices.end()); // insert in the end
-
-	return (startIndex);
-}
-
-const std::vector<Matrix4>& CRenderQueue::GetFrameBoneMatrices() const
-{
-	return m_vFrameBoneMatrices;
 }
 
 const std::vector<SRenderInstance>& CRenderQueue::GetRenderItems() const

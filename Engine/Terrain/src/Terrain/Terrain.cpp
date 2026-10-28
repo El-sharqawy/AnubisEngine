@@ -1,4 +1,4 @@
-#include "Terrain.h"
+#include "Terrain/Terrain.h"
 #include <algorithm>
 #include "EngineMathVectors.h"
 
@@ -44,7 +44,7 @@ void CTerrain::GenerateTerrainPatches(int32_t patchX, int32_t patchZ)
 	const int32_t patchIndex = patchZ * PATCH_XCOUNT + patchX;
 	auto& patch = m_vecTerrainPatches[patchIndex];
 
-	if (!patch.IsUpdateNeeded())
+	if (!patch.IsUpdateNeeded()) // no update needed
 	{
 		return;
 	}
@@ -55,18 +55,18 @@ void CTerrain::GenerateTerrainPatches(int32_t patchX, int32_t patchZ)
 	const int32_t startX = patchX * PATCH_XSIZE;
 	const int32_t startZ = patchZ * PATCH_ZSIZE;
 
-	float baseWorldX = static_cast<float>(m_iTerrCoordX * XSIZE * CELL_SCALE_METER) + static_cast<float>(startX * CELL_SCALE_METER);
-	float baseWorldZ = static_cast<float>(m_iTerrCoordZ * ZSIZE * CELL_SCALE_METER) + static_cast<float>(startZ * CELL_SCALE_METER);
+	float baseWorldX = static_cast<float>(m_iTerrCoordX * XSIZE * CELL_SCALE) + static_cast<float>(startX * CELL_SCALE);
+	float baseWorldZ = static_cast<float>(m_iTerrCoordZ * ZSIZE * CELL_SCALE) + static_cast<float>(startZ * CELL_SCALE);
 
-	float fPatchXSizeMeters = PATCH_XSIZE * CELL_SCALE_METER;
-	float fPatchZSizeMeters = PATCH_ZSIZE * CELL_SCALE_METER;
+	float fPatchXSizeMeters = PATCH_XSIZE * CELL_SCALE;
+	float fPatchZSizeMeters = PATCH_ZSIZE * CELL_SCALE;
 
 	auto& vertices = patch.GetVertices();
 	vertices.clear();
 	vertices.reserve(PATCH_VERTEX_COUNT);
 
 	Vector3D minBounds = { baseWorldX, FLT_MAX, baseWorldZ };
-	Vector3D maxBounds = { baseWorldX + static_cast<float>(PATCH_XSIZE * CELL_SCALE_METER), FLT_MIN, baseWorldZ + static_cast<float>(PATCH_ZSIZE * CELL_SCALE_METER) };
+	Vector3D maxBounds = { baseWorldX + static_cast<float>(PATCH_XSIZE * CELL_SCALE), FLT_MIN, baseWorldZ + static_cast<float>(PATCH_ZSIZE * CELL_SCALE) };
 
 	for (int32_t localZ = 0; localZ <= PATCH_ZSIZE; ++localZ)
 	{
@@ -78,7 +78,7 @@ void CTerrain::GenerateTerrainPatches(int32_t patchX, int32_t patchZ)
 			const float h = 0.0f;
 
 			STerrainVertex v{};
-			v.m_v3Position = Vector3D{ baseWorldX + localX * CELL_SCALE_METER, h, baseWorldZ + localZ * CELL_SCALE_METER };
+			v.m_v3Position = Vector3D{ baseWorldX + localX * CELL_SCALE, h, baseWorldZ + localZ * CELL_SCALE };
 
 			v.m_v2TexCoords = Vector2D{ static_cast<float>(localX) / static_cast<float>(PATCH_XSIZE), static_cast<float>(localZ) / static_cast<float>(PATCH_ZSIZE) };
 
@@ -98,8 +98,8 @@ void CTerrain::GenerateTerrainPatches(int32_t patchX, int32_t patchZ)
 			float hD = sampleHeight(mapX, mapZ - 1);
 			float hU = sampleHeight(mapX, mapZ + 1);
 
-			Vector3D dx(2.0f * static_cast<float>(CELL_SCALE_METER), hR - hL, 0.0f);
-			Vector3D dz(0.0f, hU - hD, 2.0f * static_cast<float>(CELL_SCALE_METER));
+			Vector3D dx(2.0f * static_cast<float>(CELL_SCALE), hR - hL, 0.0f);
+			Vector3D dz(0.0f, hU - hD, 2.0f * static_cast<float>(CELL_SCALE));
 			Vector3D n = EngineMath::Normalize(EngineMath::Cross(dz, dx));
 			v.m_v3Normals = n;
 
@@ -114,7 +114,7 @@ void CTerrain::GenerateTerrainPatches(int32_t patchX, int32_t patchZ)
 	patch.SetUpdateNeed(false);
 }
 
-void CTerrain::AppendVisibleData(std::vector<SDrawElementsIndirectCommand>& globalCmds)
+void CTerrain::AppendTerrainRenderData(std::vector<SDrawElementsIndirectCommand>& globalCmds)
 {
 	for (auto& patch : m_vecTerrainPatches)
 	{

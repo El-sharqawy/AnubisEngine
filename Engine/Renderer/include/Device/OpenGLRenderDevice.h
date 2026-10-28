@@ -24,6 +24,7 @@ public:
     EGraphicsAPI GetAPI() const override;
 
     bool Initialize(GLFWwindow* pPlatformWindowHandle) override;
+    bool IsInitialized() const override;
     void Shutdown() override;
 
     void BeginFrame() override;

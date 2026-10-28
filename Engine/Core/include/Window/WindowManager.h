@@ -12,7 +12,10 @@ public:
 	CWindowManager() = default;
 	~CWindowManager() = default;
 
-	bool Initialize(const EWindowMode& windowMode, const EGraphicsAPI& api);
+	bool Initialize(const std::string& stWindowTitle, EWindowMode windowMode, EGraphicsAPI api);
+	bool CreateWindowForAPI(EGraphicsAPI api);
+	bool SwitchGraphicsAPI(EGraphicsAPI newAPI);
+	void DestroyWindow();
 	EGraphicsAPI GetGraphicsAPI() const;
 
 	// Vulkan
@@ -82,6 +85,7 @@ protected:
 	static void mouse_button_callback(GLFWwindow* window, GLint button, GLint action, GLint mods);
 
 private:
+	std::string m_stWindowTitle;
 	EGraphicsAPI m_eGraphicsAPI = EGraphicsAPI::API_NONE;
 
 	GLFWwindow* m_pGLFWWindow = nullptr;

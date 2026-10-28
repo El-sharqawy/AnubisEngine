@@ -1,6 +1,4 @@
-#include "TerrainPatch.h"
-#include "VulkanAPI/VulkanBuffer.h"
-#include "VulkanAPI/VulkanDevice.h"
+#include "Terrain/TerrainPatch.h"
 
 bool CTerrainPatch::Initialize()
 {
@@ -27,8 +25,6 @@ bool CTerrainPatch::Initialize()
 	m_bIsWaterPatch = false; // Is this patch a water patch?
 
 	m_fPatchWaterHeight = 0.0f; // Store the height for this specific water patch
-
-	m_sTransform = {};
 
 	m_v3BoundsMin = Vector3D(FLT_MAX);
 	m_v3BoundsMax = Vector3D(FLT_MIN);
@@ -62,8 +58,6 @@ void CTerrainPatch::Clear()
 	m_bIsWaterPatch = false; // Is this patch a water patch?
 
 	m_fPatchWaterHeight = 0.0f; // Store the height for this specific water patch
-
-	m_sTransform = {};
 
 	m_v3BoundsMin = Vector3D(FLT_MAX);
 	m_v3BoundsMax = Vector3D(FLT_MIN);
@@ -268,31 +262,6 @@ void CTerrainPatch::SetPatchWaterHeight(float fHeight)
 float CTerrainPatch::GetPatchWaterHeight() const
 {
 	return (m_fPatchWaterHeight);
-}
-
-STransform& CTerrainPatch::GetTransform()
-{
-	return (m_sTransform);
-}
-
-void CTerrainPatch::SetTransform(const STransform& sTransform)
-{
-	m_sTransform = sTransform;
-}
-
-void CTerrainPatch::SetPosition(const Vector3D& v3Position)
-{
-	m_sTransform.SetPosition(v3Position);
-}
-
-Vector3D CTerrainPatch::GetPosition() const
-{
-	return (m_sTransform.m_v3Position);
-}
-
-Matrix4 CTerrainPatch::GetMatrix() const
-{
-	return (m_sTransform.GetMatrix());
 }
 
 Vector3D& CTerrainPatch::GetVertex(int32_t x, int32_t z)

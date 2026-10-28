@@ -66,7 +66,10 @@ void CSkinPaletteManager::Shutdown()
 			AnubisSafeDelete(buffer.pBuffer);
 		}
 	}
-	m_pBonesBindingContext->Destroy();
+	if (m_pBonesBindingContext)
+	{
+		m_pBonesBindingContext->Destroy();
+	}
 }
 
 void CSkinPaletteManager::BeginFrame(uint32_t frameIndex)
@@ -112,7 +115,7 @@ SSkinPaletteGPUView CSkinPaletteManager::UploadPalette(SkinPaletteHandle handle,
 	auto it = m_mEntries.find(handle);
 	if (it == m_mEntries.end())
 	{
-		syserr("invalid handle {}", handle);
+		// syserr("invalid handle {}", handle);
 		return view;
 	}
 
@@ -137,11 +140,14 @@ SSkinPaletteGPUView CSkinPaletteManager::UploadPalette(SkinPaletteHandle handle,
 	uint64_t byteOffset = static_cast<uint64_t>(firstMatrix) * sizeof(Matrix4);
 	uint64_t byteSize = static_cast<uint64_t>(matrixCount) * sizeof(Matrix4);
 
-	if (NeedsDescriptorUpdate(m_uiCurrentFrame))
+	if (renderDev.GetAPI() == EGraphicsAPI::API_VULKAN)
 	{
-		uint32_t bindingPoint = static_cast<uint32_t>(EStorageBufferBindingSets::BINDING_POINT_BONES_SSBO);
-		m_pBonesBindingContext->UpdateBufferBinding(m_uiCurrentFrame, bindingPoint, frameBuffer.pBuffer, 0, frameBuffer.pBuffer->GetSize());
-		ClearDescriptorDirty(m_uiCurrentFrame);
+		if (NeedsDescriptorUpdate(m_uiCurrentFrame))
+		{
+			uint32_t bindingPoint = static_cast<uint32_t>(EStorageBufferBindingSets::BINDING_POINT_BONES_SSBO);
+			m_pBonesBindingContext->UpdateBufferBinding(m_uiCurrentFrame, bindingPoint, frameBuffer.pBuffer, 0, frameBuffer.pBuffer->GetSize());
+			ClearDescriptorDirty(m_uiCurrentFrame);
+		}
 	}
 
 	renderDev.UpdateBuffer(frameBuffer.pBuffer, matrices.data(), byteSize, byteOffset);
@@ -201,6 +207,8 @@ bool CSkinPaletteManager::EnsureFrameCapacity(uint32_t frameIndex, uint32_t requ
 	desc.m_eType = EBufferType::BUFFER_TYPE_STORAGE;
 	desc.m_uiSize = bufferSize;
 	desc.m_eMemoryType = EBufferMemoryType::BUFFER_MEMORY_CPU_WRITE;
+	desc.m_sBindingSets.bindingSet = EBindingLayoutSetsPoints::BINDING_POINT_SET_BONES_RESOURCES;
+	desc.m_sBindingSets.bindingPoint = static_cast<uint32_t>(EStorageBufferBindingSets::BINDING_POINT_BONES_SSBO);
 	desc.cpuWrite = true;
 
 	EBufferResizeResult result = renderDev.EnsureBufferCapacity(frameBuffer.pBuffer, bufferSize, desc);

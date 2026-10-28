@@ -6,10 +6,11 @@
 #include "Input/InputManager.h"
 #include "Events/Events.hpp"
 
-bool CWindowManager::Initialize(const EWindowMode& windowMode, const EGraphicsAPI& api)
+bool CWindowManager::Initialize(const std::string& stWindowTitle, EWindowMode windowMode, EGraphicsAPI api)
 {
 	m_eGraphicsAPI = api;
 	m_eWindowMode = windowMode;
+	m_stWindowTitle = stWindowTitle;
 
 	if (glfwInit() == false)
 	{
@@ -17,18 +18,31 @@ bool CWindowManager::Initialize(const EWindowMode& windowMode, const EGraphicsAP
 		return (false);
 	}
 
-	// Setup No Graphics API .. later will attah vulkan
-	if (api == EGraphicsAPI::API_VULKAN)
+	// Create Window
+	if (!CreateWindowForAPI(api))
 	{
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		return (false);
 	}
-	else if (api == EGraphicsAPI::API_OPENGL)
+
+	if (m_pGLFWWindow == nullptr)
 	{
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		syserr("Failed to Initialize GLFW Window");
+		return (false);
 	}
+
+	m_pCamera = new CCamera();
+	m_pCamera->Initialize(0, m_iWidth, m_iHeight);
+	return (true);
+}
+
+bool CWindowManager::CreateWindowForAPI(EGraphicsAPI api)
+{
+	if (GetGLFWWindow()) // if window still exists
+	{
+		DestroyWindow();
+	}
+
+	glfwDefaultWindowHints();
 
 	// Enable Multi Sampling, for a smoother drawing
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -59,27 +73,35 @@ bool CWindowManager::Initialize(const EWindowMode& windowMode, const EGraphicsAP
 	m_iWindowedWidth = (m_iFullScreenWidth * 75) / 100;
 	m_iWindowedHeight = (m_iFullScreenHeight * 75) / 100;
 
-	std::string stWindowTitle = "Vulkan Engine";
+	switch (api)
+	{
+	case EGraphicsAPI::API_OPENGL:
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		break;
 
-	// Create Window
+	case EGraphicsAPI::API_VULKAN:
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		break;
+	}
+
 	if (GetWindowMode() == EWindowMode::MODE_WINDOWED)
 	{
 		m_iWidth = m_iWindowedWidth;
 		m_iHeight = m_iWindowedHeight;
-
-		m_pGLFWWindow = glfwCreateWindow(m_iWidth, m_iHeight, stWindowTitle.c_str(), nullptr, nullptr);
 	}
-	else if (GetWindowMode() == EWindowMode::MODE_FULLSCREEN)
+	else
 	{
 		m_iWidth = m_iFullScreenWidth;
 		m_iHeight = m_iFullScreenHeight;
-
-		m_pGLFWWindow = glfwCreateWindow(m_iWidth, m_iHeight, stWindowTitle.c_str(), m_pMonitor, nullptr);
 	}
 
-	if (m_pGLFWWindow == nullptr)
+	m_pGLFWWindow = glfwCreateWindow(m_iWidth, m_iHeight, m_stWindowTitle.c_str(), nullptr, nullptr);
+	if (!m_pGLFWWindow)
 	{
-		syserr("Failed to Initialize GLFW Window");
+		syserr("Failed to Create Window");
 		return (false);
 	}
 
@@ -118,10 +140,24 @@ bool CWindowManager::Initialize(const EWindowMode& windowMode, const EGraphicsAP
 
 	// Show our window
 	glfwShowWindow(GetGLFWWindow());
+	return true;
+}
 
-	m_pCamera = new CCamera();
-	m_pCamera->Initialize(0, m_iWidth, m_iHeight);
-	return (true);
+bool CWindowManager::SwitchGraphicsAPI(EGraphicsAPI newAPI)
+{
+	DestroyWindow();
+
+	CreateWindowForAPI(newAPI);
+	return m_pGLFWWindow != nullptr;
+}
+
+void CWindowManager::DestroyWindow()
+{
+	if (m_pGLFWWindow)
+	{
+		glfwDestroyWindow(m_pGLFWWindow);
+		m_pGLFWWindow = nullptr;
+	}
 }
 
 EGraphicsAPI CWindowManager::GetGraphicsAPI() const

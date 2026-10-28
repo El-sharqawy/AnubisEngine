@@ -1,15 +1,4 @@
-#version 450
-
-// 1. Cross-API Layout Macros
-#ifdef VULKAN
-    #define SET_BINDING(set_idx, bind_idx) layout(set = set_idx, binding = bind_idx)
-    #define PUSH_CONSTANT layout(push_constant) uniform
-#else // OPENGL
-    // OpenGL doesn't use descriptor sets, so we ignore the set parameter
-    #define SET_BINDING(set_idx, bind_idx) layout(binding = bind_idx)
-    // OpenGL uses uniforms instead of push constants
-    #define PUSH_CONSTANT layout(std140, binding = 3) uniform
-#endif
+#version 460
 
 // Vertex Inputs (Compatible with both)
 layout(location = 0) in vec3 m_v3Position;
@@ -23,19 +12,27 @@ layout(location = 0) out vec2 fragTexCoord;
 // Camera UBO
 layout(std140, binding = 0) uniform SCameraUBO
 {
-    mat4 view;
-    mat4 proj;
-    mat4 viewProj;
+    mat4 View;
+    mat4 Projection;
+    mat4 ViewProjection;
 } cameraUBO;
 
 // Model Data (Push Constant for Vulkan, Uniform Block for OpenGL)
-layout(std140, binding = 3) uniform PushModel
+layout(std140, binding = 1) uniform SModelData
 {
-    mat4 model;
+    mat4 matModel;
+    uint skinPaletteFirstMatrix;
+    uint skinMatrixCount;
+    uint flags;
+    uint bPadding[1];
 } modelData;
 
 void main()
 {
-    gl_Position = cameraUBO.proj * cameraUBO.view * modelData.model * vec4(m_v3Position, 1.0);
+    vec4 skinnedPos    = modelData.matModel * vec4(m_v3Position, 1.0);
+    vec3 skinnedNormal = mat3(modelData.matModel) * m_v3Normal;
+
+    vec4 worldPos = modelData.matModel * skinnedPos;
+    gl_Position = cameraUBO.ViewProjection * worldPos;
     fragTexCoord = m_v2TexCoord;
 }

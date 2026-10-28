@@ -1,6 +1,6 @@
 #pragma once
 
-#include "API/Entity.h"
+#include "Entity/Entity.h"
 #include "Transform.h"
 
 class CTransformComponent : public IComponent

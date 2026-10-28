@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
-#include "API/Entity.h"
+#include "Entity/Entity.h"
 
 class CScene
 {

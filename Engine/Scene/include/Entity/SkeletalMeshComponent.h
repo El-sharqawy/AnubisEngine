@@ -1,7 +1,7 @@
 #pragma once
 
-#include "API/IComponent.h"
-#include "API/Entity.h"
+#include "Entity/IComponent.h"
+#include "Entity/Entity.h"
 #include "Model/SkeletalActorAsset.h"
 #include "Model/Animator.h"
 #include "Services/SkinPaletteManager.h"
@@ -24,7 +24,7 @@ public:
 	void Update(float deltaTime);
 
 	bool BuildRenderItemsNew(std::vector<SRenderInstance>& renderInstances);
-	bool AppendRenderItem(const Matrix4& matActor, std::vector<SRenderInstance>& renderInstances);
+	bool AppendRenderItem(const Matrix4& matActor, std::vector<SRenderInstance>& renderInstances) const;
 	bool AppendAttachemntsRenderItems(const Matrix4& matActor, const std::vector<SAttachment>& attachments, std::vector<SRenderInstance>& renderInstances);
 
 private:
@@ -32,4 +32,5 @@ private:
 	std::unique_ptr<CAnimator> m_pAnimator;
 	std::vector<SAttachment> m_vAttachments; // not default attachments
 	SkinPaletteHandle m_uiSkinPaletteHandle = INVALID_SKIN_PALETTE;
+	CEntity* m_pOwnerEntity;
 };
